@@ -1,12 +1,12 @@
-package db
+package database
 
 import "github.com/jackc/pgx"
 
-var config = pgx.ConnConfig {
-	Host: "localhost",
-	Port: 5432,
+var config = pgx.ConnConfig{
+	Host:     "localhost",
+	Port:     5432,
 	Database: "postgres",
-	User: "",
+	User:     "",
 	Password: "",
 }
 
@@ -15,4 +15,3 @@ var Connection, _ = pgx.NewConnPool(
 		ConnConfig:     config,
 		MaxConnections: 50,
 	})
-
