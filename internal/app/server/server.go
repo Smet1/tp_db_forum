@@ -21,16 +21,5 @@ func Run(port string) error {
 		return errors.Wrap(err, "server Run error")
 	}
 
-	//router := fasthttprouter.New()
-	//
-	//router.GET("/user/:nickname/profile", controllers.GetUserProfile)
-	//router.POST("/user/:nickname/profile", controllers.GetUserProfile)
-	//router.POST("/user/:nickname/create", controllers.CreateUser)
-	//
-	//err := fasthttp.ListenAndServe(address, router.Handler)
-	//if err != nil {
-	//	return errors.Wrap(err, "server Run error")
-	//}
-
 	return nil
 }

@@ -42,3 +42,7 @@ func ErrResponse(res http.ResponseWriter, errCode int, errMsg string) {
 	addErrBody(res, errMsg)
 }
 
+func ResponseObject(res http.ResponseWriter, code int, body interface{}) {
+	addErrHeader(res, code)
+	addBody(res, body)
+}
