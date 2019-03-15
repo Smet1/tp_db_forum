@@ -78,6 +78,17 @@ func CreateUser(userToCreate User) (User, error) {
 		return User{}, errors.Wrap(err, "cannot create user")
 	}
 
-
 	return userToCreate, nil
+}
+
+func UpdateUser(userToUpdate User) (User, error) {
+	conn := database.Connection
+
+	_, err := conn.Exec(`Update forum_users SET fullname = $1, email = $2, about = $3 WHERE nickname = $4`,
+		userToUpdate.Fullname, userToUpdate.Email, userToUpdate.About, userToUpdate.Nickname)
+	if err != nil {
+		return User{}, errors.Wrap(err, "cannot update user")
+	}
+
+	return userToUpdate, nil
 }

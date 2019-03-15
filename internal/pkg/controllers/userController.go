@@ -11,7 +11,6 @@ import (
 )
 
 func ParseRequestIntoStruct(req *http.Request, requestStruct interface{}) (int, error) {
-
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		return http.StatusInternalServerError, errors.Wrap(err, "body parsing error")
@@ -25,24 +24,30 @@ func ParseRequestIntoStruct(req *http.Request, requestStruct interface{}) (int, 
 	return 0, nil
 }
 
-func GetUserProfile(res http.ResponseWriter, req *http.Request) {
+func checkVar(varName string, req *http.Request) (interface{}, error) {
 	requestVariables := mux.Vars(req)
 	if requestVariables == nil {
-		ErrResponse(res, http.StatusBadRequest, "user id not provided")
 
-		log.Println("\t", errors.New("no vars found"))
-		return
+		return nil, errors.New("user nickname not provided")
 	}
 
-	searchingNickname, ok := requestVariables["nickname"]
+	result, ok := requestVariables[varName]
 	if !ok {
-		ErrResponse(res, http.StatusInternalServerError, "error")
 
-		log.Println("\t", errors.New("vars found, but cant found nickname"))
+		return nil, errors.New("vars found, but cant found nickname")
+	}
+
+	return result, nil
+}
+
+func GetUserProfile(res http.ResponseWriter, req *http.Request) {
+	searchingNickname, err := checkVar("nickname", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
 		return
 	}
 
-	u, err := models.GetUserByNickname(searchingNickname)
+	u, err := models.GetUserByNickname(searchingNickname.(string))
 	if err != nil || u.Email == "" {
 		ErrResponse(res, http.StatusNotFound, "Can't find user")
 		return
@@ -52,23 +57,35 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
-
-}
-
-func CreateUser(res http.ResponseWriter, req *http.Request) {
-	requestVariables := mux.Vars(req)
-	if requestVariables == nil {
-		ErrResponse(res, http.StatusBadRequest, "user nickname not provided")
-
-		log.Println("\t", errors.New("no vars found"))
+	nicknameToUpdate, err := checkVar("nickname", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
 		return
 	}
 
-	nicknameToCreate, ok := requestVariables["nickname"]
-	if !ok {
-		ErrResponse(res, http.StatusInternalServerError, "error")
+	u := models.User{}
+	status, err := ParseRequestIntoStruct(req, &u)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.New("vars found, but cant found nickname"))
+		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		return
+	}
+	u.Nickname = nicknameToUpdate.(string)
+
+	updatedUser, err := models.UpdateUser(u)
+	if err != nil {
+		ErrResponse(res, http.StatusConflict, err.Error())
+		return
+	}
+
+	ResponseObject(res, http.StatusOK, updatedUser)
+}
+
+func CreateUser(res http.ResponseWriter, req *http.Request) {
+	nicknameToCreate, err := checkVar("nickname", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
 		return
 	}
 
@@ -88,8 +105,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
-	u.Nickname = nicknameToCreate
+	u.Nickname = nicknameToCreate.(string)
 	//existingUser, err := models.GetUserByEmail(u.Email)
 	//if err == nil && u.Email != "" {
 	//	ErrResponseObject(res, http.StatusConflict, existingUser)
@@ -109,5 +125,5 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, http.StatusCreated ,createdUser)
+	ResponseObject(res, http.StatusCreated, createdUser)
 }
