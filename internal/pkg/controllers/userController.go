@@ -64,13 +64,18 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	}
 
 	u := models.User{}
-	status, err := ParseRequestIntoStruct(req, &u)
+	body, _ := ioutil.ReadAll(req.Body)
 	if err != nil {
-		ErrResponse(res, status, err.Error())
-
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
+		//return http.StatusInternalServerError, errors.Wrap(err, "body parsing error")
 	}
+	u.UnmarshalJSON(body)
+	//status, err := ParseRequestIntoStruct(req, &u)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 	u.Nickname = nicknameToUpdate.(string)
 
 	updatedUser, err := models.UpdateUser(u)

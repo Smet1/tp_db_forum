@@ -5,6 +5,7 @@ import (
 	"tp_db_forum/internal/database"
 )
 
+//easyjson:json
 type User struct {
 	About    string `json:"about"`
 	Email    string `json:"email"`
