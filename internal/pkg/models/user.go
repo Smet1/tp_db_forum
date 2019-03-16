@@ -25,9 +25,11 @@ func GetUserByNickname(nickname string) (User, error) {
 		if err != nil {
 			return User{}, errors.Wrap(err, "db query result parsing error")
 		}
+
+		return u, nil
 	}
 
-	return u, nil
+	return User{}, errors.New("cannot get user by nickname")
 }
 
 func GetUserByEmail(email string) (User, error) {
