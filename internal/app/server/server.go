@@ -12,9 +12,11 @@ func Run(port string) error {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/user/{nickname}/profile", controllers.GetUserProfile).Methods("GET")
-	router.HandleFunc("/user/{nickname}/profile", controllers.UpdateUserProfile).Methods("POST")
-	router.HandleFunc("/user/{nickname}/create", controllers.CreateUser).Methods("POST")
+	router.HandleFunc("/api/user/{nickname}/profile", controllers.GetUserProfile).Methods("GET")
+	router.HandleFunc("/api/user/{nickname}/profile", controllers.UpdateUserProfile).Methods("POST")
+	router.HandleFunc("/api/user/{nickname}/create", controllers.CreateUser).Methods("POST")
+
+	router.HandleFunc("/api/forum/create", controllers.CreateForum).Methods("POST")
 
 	err := http.ListenAndServe(address, router)
 	if err != nil {
