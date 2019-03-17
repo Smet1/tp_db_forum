@@ -1,51 +1,46 @@
 package controllers
 
 import (
+	"github.com/pkg/errors"
+	"log"
 	"net/http"
+	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateThread(res http.ResponseWriter, req *http.Request) {
-	//nicknameToCreate, err := checkVar("nickname", req)
-	//if err != nil {
-	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
-	//	return
-	//}
-	//
-	////u, err := models.GetUserByNickname(searchingNickname)
-	////if err == nil && u.Email != "" {
-	////	ErrResponseObject(res, http.StatusConflict, u)
-	////
-	////	return
-	////}
-	//
-	//u := models.User{}
-	//status, err := ParseRequestIntoStruct(req, &u)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-	//	return
-	//}
-	//
-	//u.Nickname = nicknameToCreate.(string)
-	////existingUser, err := models.GetUserByEmail(u.Email)
-	////if err == nil && u.Email != "" {
-	////	ErrResponseObject(res, http.StatusConflict, existingUser)
-	////
-	////	return
-	////}
-	//
-	//createdUser, err := models.CreateUser(u)
-	//if err != nil {
-	//	exitingUsers, err := models.GetUserByNicknameOrEmail(u.Nickname, u.Email)
-	//	if err != nil {
-	//		ErrResponse(res, status, err.Error())
-	//		return
-	//	}
-	//
-	//	ResponseObject(res, http.StatusConflict, exitingUsers)
-	//	return
-	//}
-	//
-	//ResponseObject(res, http.StatusCreated, createdUser)
+	slugName, err := checkVar("slug", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+		return
+	}
+	t := models.Thread{}
+
+	status, err := ParseRequestIntoStruct(req, &t)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		return
+	}
+	t.Forum = slugName.(string)
+
+	createdThread, err, status := models.CreateThread(t)
+	if err != nil {
+		if status == http.StatusNotFound {
+			ErrResponse(res, status, err.Error())
+			return
+		}
+
+		//existingForum, err := models.GetForumBySlug(f.Slug)
+		//if err != nil {
+		//	ErrResponse(res, status, err.Error())
+		//	return
+		//}
+		//
+		//ResponseObject(res, http.StatusConflict, existingForum)
+		//return
+	}
+
+	ResponseObject(res, http.StatusCreated, createdThread)
+
 }
