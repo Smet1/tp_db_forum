@@ -38,11 +38,13 @@ func addErrBody(res http.ResponseWriter, errMsg string) {
 }
 
 func ErrResponse(res http.ResponseWriter, errCode int, errMsg string) {
+	res.Header().Set("Content-Type", "application/json")
 	addErrHeader(res, errCode)
 	addErrBody(res, errMsg)
 }
 
 func ResponseObject(res http.ResponseWriter, code int, body interface{}) {
+	res.Header().Set("Content-Type", "application/json")
 	addErrHeader(res, code)
 	addBody(res, body)
 }

@@ -1,7 +1,9 @@
 package models
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
+	"net/http"
 	"tp_db_forum/internal/database"
 )
 
@@ -61,13 +63,20 @@ func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
 		return []User{}, errors.Wrap(err, "cannot get user by nickname or email")
 	}
 
-	if res.Next() {
+	for res.Next() {
 		err := res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
+
 		if err != nil {
 			return []User{}, errors.Wrap(err, "db query result parsing error")
 		}
 		result = append(result, u)
 	}
+
+	//fmt.Println("==========")
+	//for _, val := range result {
+	//	fmt.Println("\t", val)
+	//}
+	//fmt.Println("==========")
 
 	return result, nil
 }
@@ -75,23 +84,61 @@ func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
 func CreateUser(userToCreate User) (User, error) {
 	conn := database.Connection
 
-	_, err := conn.Exec(`Insert Into forum_users (nickname, fullname, email, about) VALUES ($1, $2, $3, $4)`,
+	res, err := conn.Exec(`Insert Into forum_users (nickname, fullname, email, about) VALUES ($1, $2, $3, $4)`,
 		userToCreate.Nickname, userToCreate.Fullname, userToCreate.Email, userToCreate.About)
 	if err != nil {
+		return User{}, errors.Wrap(err, "cannot create user")
+	}
+
+	if res.RowsAffected() == 0 {
 		return User{}, errors.Wrap(err, "cannot create user")
 	}
 
 	return userToCreate, nil
 }
 
-func UpdateUser(userToUpdate User) (User, error) {
+func UpdateUser(userToUpdate User) (User, error, int) {
 	conn := database.Connection
 
-	_, err := conn.Exec(`Update forum_users SET fullname = $1, email = $2, about = $3 WHERE nickname = $4`,
-		userToUpdate.Fullname, userToUpdate.Email, userToUpdate.About, userToUpdate.Nickname)
-	if err != nil {
-		return User{}, errors.Wrap(err, "cannot update user")
+	if userToUpdate.About == "" && userToUpdate.Email == "" && userToUpdate.Fullname == "" {
+		updatedUser, _ := GetUserByNickname(userToUpdate.Nickname)
+
+		return updatedUser, nil, http.StatusOK
 	}
 
-	return userToUpdate, nil
+	baseSql := "Update forum_users SET"
+	if userToUpdate.Fullname == "" {
+		baseSql += " fullname = fullname,"
+	} else {
+		baseSql += " fullname = '" + userToUpdate.Fullname + "',"
+	}
+
+	if userToUpdate.Email == "" {
+		baseSql += " email = email,"
+	} else {
+		baseSql += " email = '" + userToUpdate.Email + "',"
+	}
+
+	if userToUpdate.About == "" {
+		baseSql += " about = about"
+	} else {
+		baseSql += " about = '" + userToUpdate.About + "'"
+	}
+
+	baseSql += " WHERE nickname = '" + userToUpdate.Nickname + "'"
+
+	fmt.Println(baseSql)
+
+	res, err := conn.Exec(baseSql)
+	if err != nil {
+		return User{}, errors.Wrap(err, "cannot update user"), http.StatusConflict
+	}
+
+	if res.RowsAffected() == 0 {
+		return User{}, errors.New("not found"), http.StatusNotFound
+	}
+
+	updatedUser, _ := GetUserByNickname(userToUpdate.Nickname)
+
+	return updatedUser, nil, http.StatusOK
 }

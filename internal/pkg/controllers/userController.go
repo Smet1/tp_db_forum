@@ -53,7 +53,7 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	OkResponse(res, u)
+	ResponseObject(res, http.StatusOK, u)
 }
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
@@ -64,23 +64,22 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	}
 
 	u := models.User{}
-	body, _ := ioutil.ReadAll(req.Body)
+
+	//body, _ := ioutil.ReadAll(req.Body)
+	//u.UnmarshalJSON(body)
+
+	status, err := ParseRequestIntoStruct(req, &u)
 	if err != nil {
-		//return http.StatusInternalServerError, errors.Wrap(err, "body parsing error")
+		ErrResponse(res, status, err.Error())
+
+		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		return
 	}
-	u.UnmarshalJSON(body)
-	//status, err := ParseRequestIntoStruct(req, &u)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-	//	return
-	//}
 	u.Nickname = nicknameToUpdate.(string)
 
-	updatedUser, err := models.UpdateUser(u)
+	updatedUser, err, errCode := models.UpdateUser(u)
 	if err != nil {
-		ErrResponse(res, http.StatusConflict, err.Error())
+		ErrResponse(res, errCode, err.Error())
 		return
 	}
 
