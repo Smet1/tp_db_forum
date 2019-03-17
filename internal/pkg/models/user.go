@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
 	"tp_db_forum/internal/database"
@@ -127,7 +126,7 @@ func UpdateUser(userToUpdate User) (User, error, int) {
 
 	baseSql += " WHERE nickname = '" + userToUpdate.Nickname + "'"
 
-	fmt.Println(baseSql)
+	//fmt.Println(baseSql)
 
 	res, err := conn.Exec(baseSql)
 	if err != nil {

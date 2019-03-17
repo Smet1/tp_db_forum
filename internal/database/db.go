@@ -13,5 +13,5 @@ var config = pgx.ConnConfig{
 var Connection, _ = pgx.NewConnPool(
 	pgx.ConnPoolConfig{
 		ConnConfig:     config,
-		MaxConnections: 50,
+		MaxConnections: 1000,
 	})

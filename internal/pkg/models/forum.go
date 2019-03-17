@@ -6,16 +6,24 @@ import (
 )
 
 type Forum struct {
-	Posts int64 `json:"posts"`
-	Slug string `json:"slug"`
-	Threads int32 `json:"threads"`
-	Title string `json:"title"`
-	User string `json:"user"`
+	Posts   int64  `json:"posts"`
+	Slug    string `json:"slug"`
+	Threads int32  `json:"threads"`
+	Title   string `json:"title"`
+	User    string `json:"user"`
 }
 
 func CreateForum(forumToCreate Forum) (Forum, error) {
 	conn := database.Connection
-	_, err := conn.Exec(`Insert Into forum_forum (posts, slug, threads, title, "user") VALUES ($1, $2, $3, $4, $5)`,
+
+	existingUser, err := GetUserByNickname(forumToCreate.User)
+	if err != nil {
+		return Forum{}, errors.Wrap(err, "cannot create forum")
+	}
+
+	forumToCreate.User = existingUser.Nickname
+
+	_, err = conn.Exec(`Insert Into forum_forum (posts, slug, threads, title, "user") VALUES ($1, $2, $3, $4, $5)`,
 		forumToCreate.Posts, forumToCreate.Slug, forumToCreate.Threads, forumToCreate.Title, forumToCreate.User)
 	if err != nil {
 		return Forum{}, errors.Wrap(err, "cannot create forum")

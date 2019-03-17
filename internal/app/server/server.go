@@ -17,6 +17,7 @@ func Run(port string) error {
 	router.HandleFunc("/api/user/{nickname}/create", controllers.CreateUser).Methods("POST")
 
 	router.HandleFunc("/api/forum/create", controllers.CreateForum).Methods("POST")
+	router.HandleFunc("/api/forum/{slug}/details", controllers.GetForum).Methods("GET")
 
 	err := http.ListenAndServe(address, router)
 	if err != nil {
