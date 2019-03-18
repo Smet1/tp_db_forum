@@ -48,5 +48,9 @@ func GetForumBySlug(slug string) (Forum, error) {
 		}
 	}
 
+	if f.Slug == "" {
+		return Forum{}, errors.New("cannot get forum by slug")
+	}
+
 	return f, nil
 }

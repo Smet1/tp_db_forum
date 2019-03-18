@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS forum_forum
 CREATE TABLE IF NOT EXISTS forum_thread
 (
   author  CITEXT REFERENCES forum_users (nickname) NOT NULL,
-  created TIMESTAMP,
+  created timestamptz,
   forum   CITEXT REFERENCES forum_forum (slug)     NOT NULL,
   id      SERIAL PRIMARY KEY,
   message TEXT                                     NOT NULL,

@@ -2,7 +2,9 @@ package models
 
 import (
 	"github.com/pkg/errors"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 	"tp_db_forum/internal/database"
 )
@@ -46,6 +48,59 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 			return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 		}
 	}
+	log.Println("\t\t CreateThread id = ", threadToCreate.ID)
 
 	return threadToCreate, nil, http.StatusOK
+}
+
+func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread, error, int) {
+	conn := database.Connection
+
+	queriedThreads := make([]Thread, 0, 1)
+
+	existingForum, err := GetForumBySlug(slug)
+	if err != nil {
+		return []Thread{}, errors.Wrap(err, "cant find slug"), http.StatusNotFound
+	}
+
+
+	baseSQL := "SELECT * FROM forum_thread "
+
+
+	baseSQL += " WHERE forum = '" + existingForum.Slug + "'"
+
+	if since != "" {
+		if desc {
+			baseSQL += " AND created <= '" + since + "'" // ::timestamptz
+		} else {
+			baseSQL += "mAND created >= '" + since + "'"
+		}
+	}
+
+	if desc {
+		baseSQL += " ORDER BY created DESC"
+	}
+
+	if limit > 0 {
+		baseSQL += " LIMIT " + strconv.Itoa(limit)
+	}
+
+	log.Println(baseSQL)
+	res, err := conn.Query(baseSQL)
+	if err != nil {
+		return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
+	}
+
+	t := Thread{}
+
+	for res.Next() {
+		err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+
+		if err != nil {
+			return []Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		}
+		queriedThreads = append(queriedThreads, t)
+	}
+
+	return queriedThreads, nil, http.StatusOK
 }
