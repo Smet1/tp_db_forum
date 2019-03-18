@@ -41,6 +41,9 @@ func checkVar(varName string, req *http.Request) (interface{}, error) {
 }
 
 func GetUserProfile(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("GetUserProfile", req.URL)
+
 	searchingNickname, err := checkVar("nickname", req)
 	if err != nil {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
@@ -57,6 +60,9 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("UpdateUserProfile", req.URL)
+
 	nicknameToUpdate, err := checkVar("nickname", req)
 	if err != nil {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
@@ -87,6 +93,9 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func CreateUser(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("CreateUser", req.URL)
+
 	nicknameToCreate, err := checkVar("nickname", req)
 	if err != nil {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())

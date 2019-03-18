@@ -9,6 +9,9 @@ import (
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("CreateForum", req.URL)
+
 	f := models.Forum{}
 	status, err := ParseRequestIntoStruct(req, &f)
 	if err != nil {
@@ -42,7 +45,9 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
-	log.Println(req.URL)
+	log.Println("=============")
+	log.Println("GetForum", req.URL)
+
 	searchingSlug, err := checkVar("slug", req)
 	if err != nil {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())

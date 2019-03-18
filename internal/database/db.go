@@ -1,6 +1,8 @@
 package database
 
-import "github.com/jackc/pgx"
+import (
+	"github.com/jackc/pgx"
+)
 
 var config = pgx.ConnConfig{
 	Host:     "localhost",
