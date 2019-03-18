@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -28,16 +29,37 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		return Thread{}, errors.Wrap(err, "cant find slug"), http.StatusNotFound
 	}
 	threadToCreate.Forum = existingForum.Slug
+	fmt.Println("\t\tDB forum.slug = ", existingForum.Slug)
 
 	existingUser, err := GetUserByNickname(threadToCreate.Author)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cant find user"), http.StatusNotFound
 	}
 	threadToCreate.Author = existingUser.Nickname
+	fmt.Println("\t\tDB user.nickname = ", existingUser.Nickname)
 
-	_, err = conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6)`,
-		threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
-		threadToCreate.Title)
+	if threadToCreate.Slug == "" {
+		resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, NULL, $5)`,
+			threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Title)
+		if resInsert.RowsAffected() == 0 {
+			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
+		}
+	} else {
+		resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6)`,
+			threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
+			threadToCreate.Title)
+		if resInsert.RowsAffected() == 0 {
+			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
+		}
+	}
+
+	//resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6)`,
+	//	threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
+	//	threadToCreate.Title)
+	//if resInsert.RowsAffected() == 0 {
+	//	return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
+	//}
+
 
 	// get last id
 	res, err := conn.Query(`SELECT last_value FROM forum_thread_id_seq`)
@@ -49,6 +71,18 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		}
 	}
 	log.Println("\t\t CreateThread id = ", threadToCreate.ID)
+
+	//res, err := conn.Query(`SELECT id FROM forum_thread WHERE slug = $1`, threadToCreate.Slug)
+	//defer res.Close()
+	//
+	//for res.Next() {
+	//	err := res.Scan(&threadToCreate.ID)
+	//
+	//	if err != nil {
+	//		return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+	//	}
+	//}
+	//log.Println("\t\t CreateThread id = ", threadToCreate.ID)
 
 	return threadToCreate, nil, http.StatusOK
 }
@@ -64,7 +98,7 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 	}
 
 
-	baseSQL := "SELECT * FROM forum_thread "
+	baseSQL := "SELECT * FROM forum_thread"
 
 
 	baseSQL += " WHERE forum = '" + existingForum.Slug + "'"
@@ -73,7 +107,7 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 		if desc {
 			baseSQL += " AND created <= '" + since + "'" // ::timestamptz
 		} else {
-			baseSQL += "mAND created >= '" + since + "'"
+			baseSQL += " AND created >= '" + since + "'"
 		}
 	}
 
@@ -87,6 +121,8 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 
 	log.Println(baseSQL)
 	res, err := conn.Query(baseSQL)
+	defer res.Close()
+
 	if err != nil {
 		return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
 	}

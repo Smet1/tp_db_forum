@@ -18,6 +18,8 @@ func GetUserByNickname(nickname string) (User, error) {
 	conn := database.Connection
 	u := User{}
 	res, err := conn.Query(`SELECT about, email, fullname, nickname FROM forum_users WHERE nickname = $1`, nickname)
+	defer res.Close()
+
 	if err != nil {
 		return User{}, errors.Wrap(err, "cannot get user by nickname")
 	}
@@ -38,6 +40,8 @@ func GetUserByEmail(email string) (User, error) {
 	conn := database.Connection
 	u := User{}
 	res, err := conn.Query(`SELECT about, email, fullname, nickname FROM forum_users WHERE email = $1`, email)
+	defer res.Close()
+
 	if err != nil {
 		return User{}, errors.Wrap(err, "cannot get user by nickname")
 	}
@@ -58,6 +62,8 @@ func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
 	u := User{}
 	res, err := conn.Query(`SELECT about, email, fullname, nickname FROM forum_users WHERE email = $1 OR nickname = $2`,
 		email, nickname)
+	defer res.Close()
+
 	if err != nil {
 		return []User{}, errors.Wrap(err, "cannot get user by nickname or email")
 	}

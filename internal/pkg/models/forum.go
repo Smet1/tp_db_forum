@@ -35,6 +35,7 @@ func CreateForum(forumToCreate Forum) (Forum, error) {
 func GetForumBySlug(slug string) (Forum, error) {
 	conn := database.Connection
 	res, err := conn.Query(`SELECT * FROM forum_forum WHERE slug = $1`, slug)
+	defer res.Close()
 	if err != nil {
 		return Forum{}, errors.Wrap(err, "cannot get forum by slug")
 	}
