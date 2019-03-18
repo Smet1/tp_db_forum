@@ -60,7 +60,6 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 	//	return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
 	//}
 
-
 	// get last id
 	res, err := conn.Query(`SELECT last_value FROM forum_thread_id_seq`)
 	for res.Next() {
@@ -97,9 +96,7 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 		return []Thread{}, errors.Wrap(err, "cant find slug"), http.StatusNotFound
 	}
 
-
 	baseSQL := "SELECT * FROM forum_thread"
-
 
 	baseSQL += " WHERE forum = '" + existingForum.Slug + "'"
 

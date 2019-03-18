@@ -9,7 +9,7 @@ import (
 	"tp_db_forum/internal/pkg/models"
 )
 
-func PrintThread(t models.Thread)  {
+func PrintThread(t models.Thread) {
 	fmt.Println("\tauthor = ", t.Author)
 	fmt.Println("\tcreated = ", t.Created)
 	fmt.Println("\tforum = ", t.Forum)
@@ -41,7 +41,6 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 	t.Forum = slugName.(string)
 	fmt.Println("\tGET")
 	PrintThread(t)
-
 
 	createdThread, err, status := models.CreateThread(t)
 	if err != nil {
@@ -88,7 +87,7 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
 	since := query.Get("since")
-	desc,_ := strconv.ParseBool(query.Get("desc"))
+	desc, _ := strconv.ParseBool(query.Get("desc"))
 
 	fmt.Println(query)
 	fmt.Println(limit)
