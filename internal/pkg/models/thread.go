@@ -113,6 +113,8 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 
 	if desc {
 		baseSQL += " ORDER BY created DESC"
+	} else {
+		baseSQL += " ORDER BY created"
 	}
 
 	if limit > 0 {
