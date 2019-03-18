@@ -7,10 +7,8 @@ TRUNCATE TABLE forum_thread CASCADE;
 DROP TABLE IF EXISTS forum_users CASCADE;
 DROP TABLE IF EXISTS forum_forum CASCADE;
 DROP TABLE IF EXISTS forum_thread CASCADE;
--- DROP TABLE IF EXISTS post;
+DROP TABLE IF EXISTS forum_post CASCADE;
 -- DROP TABLE IF EXISTS vote;
--- DROP TABLE IF EXISTS thread;
--- DROP TABLE IF EXISTS forum_users;
 
 CREATE TABLE IF NOT EXISTS forum_users
 (
@@ -40,4 +38,16 @@ CREATE TABLE IF NOT EXISTS forum_thread
   slug    CITEXT                                            DEFAULT NULL UNIQUE,
   title   TEXT,
   votes   INTEGER                                  NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS forum_post
+(
+  author   citext REFERENCES forum_users (nickname) NOT NULL,
+  created  timestamptz,
+  forum    citext REFERENCES forum_forum (slug),
+  id       SERIAL PRIMARY KEY,
+  isEdited BOOLEAN DEFAULT FALSE,
+  message  TEXT                                     NOT NULL,
+  parent   INTEGER DEFAULT 0,
+  thread   INTEGER REFERENCES forum_thread (id)     NOT NULL
 )

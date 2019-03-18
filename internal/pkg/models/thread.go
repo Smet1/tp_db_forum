@@ -42,14 +42,14 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, NULL, $5)`,
 			threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Title)
 		if resInsert.RowsAffected() == 0 {
-			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
+			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
 		}
 	} else {
 		resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6)`,
 			threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
 			threadToCreate.Title)
 		if resInsert.RowsAffected() == 0 {
-			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
+			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
 		}
 	}
 
@@ -138,4 +138,68 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 	}
 
 	return queriedThreads, nil, http.StatusOK
+}
+
+func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
+	conn := database.Connection
+	t := Thread{}
+	if id == -1 {
+
+		res, err := conn.Query(`SELECT * FROM forum_thread WHERE slug = $1`, slug)
+		defer res.Close()
+
+		if err != nil {
+			return Thread{}, errors.Wrap(err, "cannot get thread by slug"), http.StatusNotFound
+		}
+
+		if res.Next() {
+			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			if err != nil {
+				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			}
+
+			return t, nil, http.StatusOK
+		}
+
+		return Thread{}, errors.New("cannot get thread by nickname"), http.StatusNotFound
+
+	} else if slug == "" {
+
+		res, err := conn.Query(`SELECT * FROM forum_thread WHERE id = $1`, id)
+		defer res.Close()
+
+		if err != nil {
+			return Thread{}, errors.Wrap(err, "cannot get thread by id"), http.StatusNotFound
+		}
+
+		if res.Next() {
+			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			if err != nil {
+				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			}
+
+			return t, nil, http.StatusOK
+		}
+
+		return Thread{}, errors.New("cannot get thread by id"), http.StatusNotFound
+
+	} else {
+		res, err := conn.Query(`SELECT * FROM forum_thread WHERE id = $1 OR slug = $2`, id, slug)
+		defer res.Close()
+
+		if err != nil {
+			return Thread{}, errors.Wrap(err, "cannot get thread by id or slug"), http.StatusNotFound
+		}
+
+		if res.Next() {
+			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			if err != nil {
+				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			}
+
+			return t, nil, http.StatusOK
+		}
+
+		return Thread{}, errors.New("cannot get thread by id or slug"), http.StatusNotFound
+	}
 }

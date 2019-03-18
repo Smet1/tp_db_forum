@@ -45,14 +45,17 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 	createdThread, err, status := models.CreateThread(t)
 	if err != nil {
 		if status == http.StatusNotFound {
+			fmt.Println("--==not found==--")
 			ErrResponse(res, status, err.Error())
 
 			log.Println(err.Error())
 			return
 		}
 
-		if status == http.StatusInternalServerError {
-			ErrResponse(res, status, err.Error())
+		if status == http.StatusConflict {
+			fmt.Println("--==conflict==--")
+			conflictThread, _, _ := models.GetThreadByIDorSlug(-1, t.Slug)
+			ResponseObject(res, status, conflictThread)
 
 			log.Println(err.Error())
 			return
