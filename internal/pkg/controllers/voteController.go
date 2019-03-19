@@ -67,3 +67,28 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 
 	ResponseObject(res, http.StatusOK, updatedThread)
 }
+
+func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("GetThreadDetails", req.URL)
+
+	slugOrId, err := checkVar("slug_or_id", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+		return
+	}
+	slug := slugOrId.(string)
+	id, err := strconv.ParseInt(slug, 10, 32)
+	if id == 0 {
+		id = -1
+	}
+
+	existingThread, err, status := models.GetThreadByIDorSlug(int(id), slug)
+	if err != nil {
+		ErrResponse(res, status, errors.Wrap(err, "slug not found").Error())
+
+		return
+	}
+
+	ResponseObject(res, http.StatusOK, existingThread)
+}

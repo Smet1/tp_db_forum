@@ -52,3 +52,48 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 
 	ResponseObject(res, http.StatusCreated, createdPosts)
 }
+
+func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("GetThreadPosts", req.URL)
+
+	slugOrId, err := checkVar("slug_or_id", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+		return
+	}
+	slug := slugOrId.(string)
+	id, err := strconv.ParseInt(slug, 10, 32)
+	if id == 0 {
+		id = -1
+	}
+
+	existingThread, err, status := models.GetThreadByIDorSlug(int(id), slug)
+	if err != nil {
+		ErrResponse(res, status, errors.Wrap(err, "not found").Error())
+		return
+	}
+
+	fmt.Println(existingThread)
+
+	query := req.URL.Query()
+	limit, _ := strconv.Atoi(query.Get("limit"))
+	since, _ := strconv.Atoi(query.Get("since"))
+	sort := query.Get("sort")
+	desc, _ := strconv.ParseBool(query.Get("desc"))
+
+	fmt.Println(query)
+	fmt.Println(limit)
+	fmt.Println(since)
+	fmt.Println(sort)
+	fmt.Println(desc)
+
+	sortedPosts, err, status := models.GetSortedPosts(existingThread, limit, since, sort, desc)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		return
+	}
+
+	ResponseObject(res, status, sortedPosts)
+}

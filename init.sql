@@ -49,7 +49,8 @@ CREATE TABLE IF NOT EXISTS forum_post
   isEdited BOOLEAN DEFAULT FALSE,
   message  TEXT                                     NOT NULL,
   parent   INTEGER DEFAULT 0,
-  thread   INTEGER REFERENCES forum_thread (id)     NOT NULL
+  thread   INTEGER REFERENCES forum_thread (id)     NOT NULL,
+  path     INTEGER[]
 );
 
 CREATE TABLE IF NOT EXISTS forum_vote

@@ -22,8 +22,10 @@ func Run(port string) error {
 	router.HandleFunc("/api/forum/{slug}/threads", controllers.GetThreads).Methods("GET")
 
 	router.HandleFunc("/api/thread/{slug_or_id}/create", controllers.CreatePosts).Methods("POST")
+	router.HandleFunc("/api/thread/{slug_or_id}/details", controllers.GetThreadDetails).Methods("GET")
 
 	router.HandleFunc("/api/thread/{slug_or_id}/vote", controllers.CreateVote).Methods("POST")
+	router.HandleFunc("/api/thread/{slug_or_id}/posts", controllers.GetThreadPosts).Methods("GET")
 
 	err := http.ListenAndServe(address, router)
 	if err != nil {
