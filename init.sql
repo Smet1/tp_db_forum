@@ -50,4 +50,11 @@ CREATE TABLE IF NOT EXISTS forum_post
   message  TEXT                                     NOT NULL,
   parent   INTEGER DEFAULT 0,
   thread   INTEGER REFERENCES forum_thread (id)     NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS forum_voice
+(
+  nickname CITEXT REFERENCES forum_users(nickname) NOT NULL,
+  voice SMALLINT CHECK ( voice IN (-1, 1) ),
+  thread INTEGER REFERENCES forum_thread(id) NOT NULL
 )
