@@ -117,3 +117,52 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 		PrintThread(val)
 	}
 }
+
+func UpdateThread(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("UpdateThread", req.URL)
+
+	slugOrId, err := checkVar("slug_or_id", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get slug or id").Error())
+		return
+	}
+	slug := slugOrId.(string)
+	id, err := strconv.ParseInt(slug, 10, 32)
+	if id == 0 {
+		id = -1
+	}
+	t := models.Thread{}
+
+	status, err := ParseRequestIntoStruct(req, &t)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		return
+	}
+
+	fmt.Println("--== new ==--")
+	PrintThread(t)
+
+	existingThread, err, status := models.GetThreadByIDorSlug(int(id), slug)
+	if err != nil {
+		ErrResponse(res, status, errors.Wrap(err, "not found").Error())
+		return
+	}
+
+	fmt.Println("--== existing ==--")
+	PrintThread(existingThread)
+
+	updatedThread, err, status := models.UpdateThread(existingThread, t)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		return
+	}
+
+	fmt.Println("--== updated ==--")
+	PrintThread(updatedThread)
+
+	ResponseObject(res, status, updatedThread)
+}

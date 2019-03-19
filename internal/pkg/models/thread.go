@@ -229,3 +229,40 @@ func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 	updatedThread, _, _ := GetThreadByIDorSlug(int(threadId), "")
 	return updatedThread, nil, http.StatusOK
 }
+
+func UpdateThread(existingThread Thread, newThread Thread) (Thread, error, int) {
+	conn := database.Connection
+
+	if newThread.Message == "" && newThread.Title == "" {
+		return existingThread, nil, http.StatusOK
+	}
+
+	baseSQL := "UPDATE forum_thread SET"
+	if newThread.Message == "" {
+		baseSQL += " message = message,"
+	} else {
+		baseSQL += " message = '" + newThread.Message + "',"
+	}
+
+	if newThread.Title == "" {
+		baseSQL += " title = title"
+	} else {
+		baseSQL += " title = '" + newThread.Title + "'"
+	}
+
+	baseSQL += " WHERE slug = '" + existingThread.Slug + "'"
+
+	fmt.Println("\t", baseSQL)
+	res, err := conn.Exec(baseSQL)
+	if err != nil {
+		return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict
+	}
+
+	if res.RowsAffected() == 0 {
+		return Thread{}, errors.New("not found"), http.StatusNotFound
+	}
+
+	updatedThread, _, _ := GetThreadByIDorSlug(-1, existingThread.Slug)
+
+	return updatedThread, nil, http.StatusOK
+}

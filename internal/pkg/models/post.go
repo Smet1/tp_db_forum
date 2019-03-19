@@ -66,6 +66,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 }
 
 func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc bool) ([]Post, error, int) {
+	// tree && parent tree UNDONE
 	conn := database.Connection
 
 	baseSQL := ""
@@ -89,6 +90,24 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 			baseSQL += " ORDER BY id DESC"
 		} else {
 			baseSQL += " ORDER BY id"
+		}
+
+		baseSQL += " LIMIT " + strconv.Itoa(limit)
+	case "tree":
+		baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID
+
+		if since != 0 {
+			if desc {
+				baseSQL += " AND id < (SELECT path FROM post WHERE id = " + strconv.Itoa(since) + ")"
+			} else {
+				baseSQL += " AND id > (SELECT path FROM post WHERE id = " + strconv.Itoa(since) + ")"
+			}
+		}
+
+		if desc {
+			baseSQL += " ORDER BY path DESC"
+		} else {
+			baseSQL += " ORDER BY path"
 		}
 
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
