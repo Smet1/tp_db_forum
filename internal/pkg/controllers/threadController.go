@@ -54,6 +54,8 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 
 		if status == http.StatusConflict {
 			fmt.Println("--==conflict==--")
+			fmt.Println("slug = ", t.Slug)
+
 			conflictThread, _, _ := models.GetThreadByIDorSlug(-1, t.Slug)
 			ResponseObject(res, status, conflictThread)
 

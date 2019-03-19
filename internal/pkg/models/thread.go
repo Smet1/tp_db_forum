@@ -203,3 +203,29 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 		return Thread{}, errors.New("cannot get thread by id or slug"), http.StatusNotFound
 	}
 }
+
+func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
+	conn := database.Connection
+
+	fmt.Println("UpdateThreadVote")
+	fmt.Println(voteValue)
+	plus := "+"
+	if voteValue < 0 {
+		plus = "-"
+		voteValue = -voteValue
+	}
+
+	fmt.Println(plus)
+
+	res, err := conn.Exec(`UPDATE forum_thread SET votes = votes` + plus + `$1 WHERE id = $2`, voteValue, threadId)
+	if err != nil {
+		return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict
+	}
+
+	if res.RowsAffected() == 0 {
+		return Thread{}, errors.New("not found"), http.StatusNotFound
+	}
+
+	updatedThread, _, _ := GetThreadByIDorSlug(int(threadId), "")
+	return updatedThread, nil, http.StatusOK
+}

@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS forum_users CASCADE;
 DROP TABLE IF EXISTS forum_forum CASCADE;
 DROP TABLE IF EXISTS forum_thread CASCADE;
 DROP TABLE IF EXISTS forum_post CASCADE;
--- DROP TABLE IF EXISTS vote;
+DROP TABLE IF EXISTS forum_vote CASCADE;
 
 CREATE TABLE IF NOT EXISTS forum_users
 (
@@ -52,9 +52,10 @@ CREATE TABLE IF NOT EXISTS forum_post
   thread   INTEGER REFERENCES forum_thread (id)     NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS forum_voice
+CREATE TABLE IF NOT EXISTS forum_vote
 (
-  nickname CITEXT REFERENCES forum_users(nickname) NOT NULL,
-  voice SMALLINT CHECK ( voice IN (-1, 1) ),
-  thread INTEGER REFERENCES forum_thread(id) NOT NULL
+  nickname CITEXT REFERENCES forum_users (nickname) NOT NULL,
+  voice    SMALLINT CHECK ( voice IN (-1, 1) ),
+  thread   INTEGER REFERENCES forum_thread (id)     NOT NULL,
+  UNIQUE (nickname, thread)
 )

@@ -42,7 +42,6 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-
 	createdPosts, err, status := models.CreatePosts(postsToCreate, existingThread)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
