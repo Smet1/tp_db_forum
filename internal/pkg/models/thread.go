@@ -217,7 +217,7 @@ func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 
 	fmt.Println(plus)
 
-	res, err := conn.Exec(`UPDATE forum_thread SET votes = votes` + plus + `$1 WHERE id = $2`, voteValue, threadId)
+	res, err := conn.Exec(`UPDATE forum_thread SET votes = votes`+plus+`$1 WHERE id = $2`, voteValue, threadId)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict
 	}

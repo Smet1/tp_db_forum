@@ -10,8 +10,8 @@ import (
 
 type Vote struct {
 	Nickname string `json:"nickname"`
-	Voice int8 `json:"voice"`
-	Thread int32 `json:"thread"`
+	Voice    int8   `json:"voice"`
+	Thread   int32  `json:"thread"`
 }
 
 func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
@@ -42,7 +42,7 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 
 		if voteToCreate.Voice == -1 && voteToCreate.Voice != voteBeforeUpdate.Voice {
 			voiceDiff = -2
-		} else if voteToCreate.Voice == 1 && voteBeforeUpdate.Voice != voteBeforeUpdate.Voice{
+		} else if voteToCreate.Voice == 1 && voteBeforeUpdate.Voice != voteBeforeUpdate.Voice {
 			voiceDiff = 2
 		} else if voteToCreate.Voice == voteBeforeUpdate.Voice {
 			voiceDiff = 0
@@ -64,7 +64,7 @@ func GetVoteByNicknameAndThreadID(nickname string, threadID int32) (Vote, error)
 
 	res, err := conn.Query(`SELECT * FROM forum_vote WHERE nickname = $1 AND thread = $2`, nickname, threadID)
 	if err != nil {
-		return Vote{}, errors.Wrap(err ,"cant find vote")
+		return Vote{}, errors.Wrap(err, "cant find vote")
 	}
 
 	existingVote := Vote{}
@@ -95,7 +95,7 @@ func UpdateVote(nickname string, threadID int32, newVoice int8) (Vote, error) {
 
 	return Vote{
 		Nickname: nickname,
-		Voice: newVoice,
-		Thread: threadID,
+		Voice:    newVoice,
+		Thread:   threadID,
 	}, nil
 }
