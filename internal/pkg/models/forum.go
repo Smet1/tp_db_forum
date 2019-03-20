@@ -2,6 +2,8 @@ package models
 
 import (
 	"github.com/pkg/errors"
+	"net/http"
+	"strconv"
 	"tp_db_forum/internal/database"
 )
 
@@ -54,4 +56,48 @@ func GetForumBySlug(slug string) (Forum, error) {
 	}
 
 	return f, nil
+}
+
+func UpdateForumStats(existingForum Forum, varToUpdate string, inc bool, diff int) int {
+	conn := database.Connection
+
+	baseSQL := "UPDATE forum_forum SET"
+
+	switch varToUpdate {
+	case "post":
+		baseSQL += " posts = posts"
+		if inc {
+			baseSQL += "+"
+		} else {
+			baseSQL += "-"
+		}
+
+		baseSQL += strconv.Itoa(diff)
+
+	case "thread":
+		baseSQL += " threads = threads"
+		if inc {
+			baseSQL += "+"
+		} else {
+			baseSQL += "-"
+		}
+
+		baseSQL += strconv.Itoa(diff)
+
+	default:
+		return http.StatusInternalServerError
+	}
+
+	baseSQL += " WHERE slug = $1"
+
+	res, err := conn.Exec(baseSQL, existingForum.Slug)
+	if err != nil {
+		return http.StatusConflict
+	}
+
+	if res.RowsAffected() == 0 {
+		return http.StatusNotFound
+	}
+
+	return http.StatusOK
 }

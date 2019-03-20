@@ -83,6 +83,11 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 	//}
 	//log.Println("\t\t CreateThread id = ", threadToCreate.ID)
 
+	status := UpdateForumStats(existingForum, "thread", true, 1)
+	if status != http.StatusOK {
+		return Thread{}, errors.New("cant update forum stats"), status
+	}
+
 	return threadToCreate, nil, http.StatusOK
 }
 

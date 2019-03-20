@@ -62,6 +62,13 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 
 		PrintPost(postsToCreate[i])
 	}
+
+	existingForum, _ := GetForumBySlug(existingThread.Forum)
+	status := UpdateForumStats(existingForum, "post", true, len(postsToCreate))
+	if status != http.StatusOK {
+		return []Post{}, errors.New("cant update forum stats"), status
+	}
+
 	return postsToCreate, nil, http.StatusOK
 }
 
@@ -132,4 +139,50 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 	}
 
 	return sortedPosts, nil, http.StatusOK
+}
+
+func UpdatePost(existingPost Post, newPost Post) (Post, error, int) {
+	conn := database.Connection
+
+	if newPost.Message == "" {
+		return existingPost, nil, http.StatusOK
+	}
+
+	res, err := conn.Exec("UPDATE forum_post SET message = $1, isedited = true WHERE id = $2", newPost.Message, existingPost.ID)
+	if err != nil {
+		return Post{}, errors.Wrap(err, "cannot update post"), http.StatusConflict
+	}
+
+	if res.RowsAffected() == 0 {
+		return Post{}, errors.New("not found"), http.StatusNotFound
+	}
+
+	updatedPost, _, _ := GetPostByID(existingPost.ID)
+
+	return updatedPost, nil, http.StatusOK
+}
+
+func GetPostByID(id int64) (Post, error, int) {
+	conn := database.Connection
+
+	res, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE id = $1", id)
+	defer res.Close()
+
+	if err != nil {
+		return Post{}, errors.Wrap(err, "cannot get post"), http.StatusNotFound
+	}
+
+	post := Post{}
+
+	for res.Next() {
+		err := res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+
+		if err != nil {
+			return Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		}
+
+		return post, nil, http.StatusOK
+	}
+
+	return Post{}, errors.New("cant find post with this id"), http.StatusNotFound
 }

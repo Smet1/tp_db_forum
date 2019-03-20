@@ -97,3 +97,45 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 
 	ResponseObject(res, status, sortedPosts)
 }
+
+func UpdatePost(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("UpdatePost", req.URL)
+
+	slug, err := checkVar("id", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+		return
+	}
+	id, err := strconv.ParseInt(slug.(string), 10, 64)
+	if id == 0 {
+		id = -1
+	}
+
+	existingPost, err, status := models.GetPostByID(id)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		return
+	}
+
+	newPost := models.Post{}
+
+	status, err = ParseRequestIntoStruct(req, &newPost)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		return
+	}
+
+	updatedPost, err, status := models.UpdatePost(existingPost, newPost)
+
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		return
+	}
+
+	ResponseObject(res, status, updatedPost)
+}
