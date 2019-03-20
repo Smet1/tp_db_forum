@@ -21,6 +21,13 @@ type Post struct {
 	Path     []int32   `json:"-"`
 }
 
+type PostFull struct {
+	Author *User `json:"author,omitempty"`
+	Forum *Forum `json:"forum,omitempty"`
+	Post *Post `json:"post,omitempty"`
+	Thread *Thread `json:"thread,omitempty"`
+}
+
 func PrintPost(t Post) {
 	fmt.Println("\tauthor = ", t.Author)
 	fmt.Println("\tcreated = ", t.Created)
@@ -185,4 +192,51 @@ func GetPostByID(id int64) (Post, error, int) {
 	}
 
 	return Post{}, errors.New("cant find post with this id"), http.StatusNotFound
+}
+
+func GetPostDetails(existingPost Post, related []string) (PostFull, error, int) {
+	conn := database.Connection
+	baseSQL := ""
+	postFull := PostFull{}
+	for _, val := range related {
+
+		switch val {
+		case "user":
+			baseSQL = `SELECT about, email, fullname, nickname FROM forum_users WHERE nickname = $1`
+			res, _ := conn.Query(baseSQL, existingPost.Author)
+
+			u := User{}
+
+			for res.Next() {
+				_ = res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
+			}
+
+			postFull.Author = &u
+
+		case "forum":
+			baseSQL = `SELECT posts, slug, threads, title, "user" FROM forum_forum WHERE slug = $1`
+			res, _ := conn.Query(baseSQL, existingPost.Forum)
+
+			f := Forum{}
+
+			for res.Next() {
+				_ = res.Scan(&f.Posts, &f.Slug, &f.Threads, &f.Title, &f.User)
+			}
+
+			postFull.Forum = &f
+		case "thread":
+			baseSQL = `SELECT author, created, forum, id, message, slug, title, votes FROM forum_thread WHERE id = $1`
+			res, _ := conn.Query(baseSQL, existingPost.Thread)
+
+			t := Thread{}
+
+			for res.Next() {
+				_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			}
+
+			postFull.Thread = &t
+		}
+	}
+
+	return postFull, nil, http.StatusOK
 }

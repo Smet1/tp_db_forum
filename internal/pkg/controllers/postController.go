@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"tp_db_forum/internal/pkg/models"
 )
 
@@ -102,12 +103,12 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 	log.Println("=============")
 	log.Println("UpdatePost", req.URL)
 
-	slug, err := checkVar("id", req)
+	postId, err := checkVar("id", req)
 	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
 		return
 	}
-	id, err := strconv.ParseInt(slug.(string), 10, 64)
+	id, err := strconv.ParseInt(postId.(string), 10, 64)
 	if id == 0 {
 		id = -1
 	}
@@ -138,4 +139,44 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ResponseObject(res, status, updatedPost)
+}
+
+func GetPostInfo(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("GetPostInfo", req.URL)
+
+	slug, err := checkVar("id", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
+		return
+	}
+	id, err := strconv.ParseInt(slug.(string), 10, 64)
+	if id == 0 {
+		id = -1
+	}
+
+	query := req.URL.Query()
+	fmt.Println(query)
+
+	related := strings.Split(query.Get("related"), ",")
+	fmt.Println(related)
+
+	existingPost, err, status := models.GetPostByID(id)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		return
+	}
+
+	tupaKek, err, status := models.GetPostDetails(existingPost, related)
+	if err != nil {
+		ErrResponse(res, status, err.Error())
+
+		return
+	}
+
+
+	tupaKek.Post = &existingPost
+
+	ResponseObject(res, status, tupaKek)
 }
