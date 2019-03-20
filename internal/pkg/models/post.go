@@ -47,6 +47,17 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	for i, post := range postsToCreate {
 		fmt.Println("--", i, "--")
 
+		if post.Parent != 0 {
+			parentPostQuery, err, _ := GetPostByID(post.Parent)
+			if err != nil {
+				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
+			}
+
+			if parentPostQuery.Thread != existingThread.ID {
+				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
+			}
+		}
+
 		resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread) VALUES ($1, $2, $3, $4, $5, $6)`,
 			post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID)
 
