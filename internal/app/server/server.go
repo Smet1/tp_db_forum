@@ -31,6 +31,8 @@ func Run(port string) error {
 
 	router.HandleFunc("/api/forum/{slug}/users", controllers.GetForumUsers).Methods("GET")
 
+	router.HandleFunc("/api/service/status", controllers.GetDBStatus).Methods("GET")
+	router.HandleFunc("/api/service/clear", controllers.ClearDB).Methods("POST")
 	err := http.ListenAndServe(address, router)
 	if err != nil {
 		return errors.Wrap(err, "server Run error")

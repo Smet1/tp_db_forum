@@ -178,7 +178,6 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 	}
 	baseSQL += ` WHERE fp.forum = '` + existingForum.Slug + `' OR ft.forum = '` + existingForum.Slug + `'`
 
-
 	if desc {
 		baseSQL += " ORDER BY nickname DESC"
 	} else {

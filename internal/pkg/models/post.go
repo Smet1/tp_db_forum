@@ -44,7 +44,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 			post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID)
 
 		if resInsert.RowsAffected() == 0 {
-			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
+			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
 		}
 		postsToCreate[i].Forum = existingThread.Forum
 		postsToCreate[i].Thread = existingThread.ID
