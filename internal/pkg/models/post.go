@@ -22,9 +22,9 @@ type Post struct {
 }
 
 type PostFull struct {
-	Author *User `json:"author,omitempty"`
-	Forum *Forum `json:"forum,omitempty"`
-	Post *Post `json:"post,omitempty"`
+	Author *User   `json:"author,omitempty"`
+	Forum  *Forum  `json:"forum,omitempty"`
+	Post   *Post   `json:"post,omitempty"`
 	Thread *Thread `json:"thread,omitempty"`
 }
 
@@ -152,6 +152,10 @@ func UpdatePost(existingPost Post, newPost Post) (Post, error, int) {
 	conn := database.Connection
 
 	if newPost.Message == "" {
+		return existingPost, nil, http.StatusOK
+	}
+
+	if existingPost.Message == newPost.Message {
 		return existingPost, nil, http.StatusOK
 	}
 

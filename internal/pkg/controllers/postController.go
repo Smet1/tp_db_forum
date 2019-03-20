@@ -129,8 +129,16 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
+	fmt.Println("--== existing post ==--")
+	models.PrintPost(existingPost)
+
+	fmt.Println("--== new post ==--")
+	models.PrintPost(newPost)
 
 	updatedPost, err, status := models.UpdatePost(existingPost, newPost)
+
+	fmt.Println("--== updated ==--")
+	models.PrintPost(updatedPost)
 
 	if err != nil {
 		ErrResponse(res, status, err.Error())
@@ -174,7 +182,6 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 
 		return
 	}
-
 
 	tupaKek.Post = &existingPost
 
