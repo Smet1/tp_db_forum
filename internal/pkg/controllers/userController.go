@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"tp_db_forum/internal/pkg/models"
 )
 
@@ -139,4 +141,46 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ResponseObject(res, http.StatusCreated, createdUser)
+}
+
+func GetForumUsers(res http.ResponseWriter, req *http.Request) {
+	log.Println("=============")
+	log.Println("GetForumUsers", req.URL)
+
+	query := req.URL.Query()
+	limit, _ := strconv.Atoi(query.Get("limit"))
+	since := query.Get("since")
+	desc, _ := strconv.ParseBool(query.Get("desc"))
+
+	fmt.Println(query)
+	fmt.Println(limit)
+	fmt.Println(since)
+	fmt.Println(desc)
+
+	searchingSlug, err := checkVar("slug", req)
+	if err != nil {
+		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())
+		return
+	}
+
+	fmt.Println(searchingSlug)
+
+	existingForum, err := models.GetForumBySlug(searchingSlug.(string))
+	if err != nil {
+		ErrResponse(res, http.StatusNotFound, errors.Wrap(err, "not found").Error())
+		return
+	}
+
+	users, err, status := models.GetForumUsersBySlug(existingForum, limit, since, desc)
+	if err != nil {
+		if status == http.StatusNotFound {
+			ErrResponse(res, status, err.Error())
+			return
+		}
+
+		ErrResponse(res, status, err.Error())
+		return
+	}
+
+	ResponseObject(res, http.StatusOK, users)
 }

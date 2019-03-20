@@ -1,8 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
+	"strconv"
 	"tp_db_forum/internal/database"
 )
 
@@ -146,4 +148,68 @@ func UpdateUser(userToUpdate User) (User, error, int) {
 	updatedUser, _ := GetUserByNickname(userToUpdate.Nickname)
 
 	return updatedUser, nil, http.StatusOK
+}
+
+func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool) ([]User, error, int) {
+	conn := database.Connection
+
+	//select DISTINCT about, email, fullname, nickname
+	//FROM forum_users
+	//       LEFT JOIN forum_post fp ON fp.author = nickname AND nickname > 'N1HR3DVSHJZhr.bill'
+	//       LEFT JOIN forum_thread ft ON ft.author = nickname AND nickname > 'N1HR3DVSHJZhr.bill'
+	//WHERE fp.forum = 'xE6RM2vYIkOoK'
+	//   OR ft.forum = 'xE6RM2vYIkOoK'
+	//ORDER BY nickname
+	//LIMIT 4;
+
+	baseSQL := `SELECT DISTINCT about, email, fullname, nickname FROM forum_users`
+	if since != "" {
+		if desc {
+			baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname` + " AND nickname < '" + since + "'"
+			baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname` + " AND nickname < '" + since + "'"
+		} else {
+			baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname` + " AND nickname > '" + since + "'"
+			baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname` + " AND nickname > '" + since + "'"
+
+		}
+	} else {
+		baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname`
+		baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname`
+	}
+	baseSQL += ` WHERE fp.forum = '` + existingForum.Slug + `' OR ft.forum = '` + existingForum.Slug + `'`
+
+
+	if desc {
+		baseSQL += " ORDER BY nickname DESC"
+	} else {
+		baseSQL += " ORDER BY nickname ASC"
+	}
+
+	if limit != 0 {
+		baseSQL += " LIMIT " + strconv.Itoa(limit)
+	}
+
+	fmt.Println("\t", baseSQL)
+
+	res, err := conn.Query(baseSQL)
+	defer res.Close()
+
+	if err != nil {
+		return []User{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
+	}
+
+	queriedUsers := make([]User, 0, 1)
+	u := User{}
+
+	for res.Next() {
+		err := res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
+
+		if err != nil {
+			return []User{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		}
+		queriedUsers = append(queriedUsers, u)
+	}
+
+	return queriedUsers, nil, http.StatusOK
+
 }

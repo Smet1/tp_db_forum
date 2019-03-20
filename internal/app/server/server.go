@@ -29,6 +29,8 @@ func Run(port string) error {
 
 	router.HandleFunc("/api/thread/{slug_or_id}/details", controllers.UpdateThread).Methods("POST")
 
+	router.HandleFunc("/api/forum/{slug}/users", controllers.GetForumUsers).Methods("GET")
+
 	err := http.ListenAndServe(address, router)
 	if err != nil {
 		return errors.Wrap(err, "server Run error")
