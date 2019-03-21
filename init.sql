@@ -6,7 +6,6 @@ TRUNCATE TABLE forum_thread CASCADE;
 TRUNCATE TABLE forum_post CASCADE;
 TRUNCATE TABLE forum_vote CASCADE;
 
-
 DROP TABLE IF EXISTS forum_users CASCADE;
 DROP TABLE IF EXISTS forum_forum CASCADE;
 DROP TABLE IF EXISTS forum_thread CASCADE;
@@ -49,11 +48,11 @@ CREATE TABLE IF NOT EXISTS forum_post
   created  timestamptz,
   forum    citext REFERENCES forum_forum (slug),
   id       SERIAL PRIMARY KEY,
-  isEdited BOOLEAN DEFAULT FALSE,
+  isEdited BOOLEAN   DEFAULT FALSE,
   message  TEXT                                     NOT NULL,
-  parent   INTEGER DEFAULT 0,
+  parent   INTEGER   DEFAULT 0,
   thread   INTEGER REFERENCES forum_thread (id)     NOT NULL,
-  path     INTEGER[]
+  path     INTEGER[] DEFAULT array []::INT[]
 );
 
 CREATE TABLE IF NOT EXISTS forum_vote

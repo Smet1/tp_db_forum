@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 	"tp_db_forum/internal/database"
 )
@@ -18,7 +19,7 @@ type Post struct {
 	Message  string    `json:"message"`
 	Parent   int64     `json:"parent,omitempty"`
 	Thread   int32     `json:"thread,omitempty"`
-	Path     []int32   `json:"-"`
+	Path     []int64   `json:"-"`
 }
 
 type PostFull struct {
@@ -56,20 +57,46 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 			if parentPostQuery.Thread != existingThread.ID {
 				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
 			}
+
+			post.Path = append(parentPostQuery.Path, parentPostQuery.ID)
 		}
 
-		resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread) VALUES ($1, $2, $3, $4, $5, $6)`,
-			post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID)
+		if post.Path == nil {
+			resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread) VALUES ($1, $2, $3, $4, $5, $6)`,
+				post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID)
 
-		if resInsert.RowsAffected() == 0 {
-			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
+			//if err != nil {
+			//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
+			//}
+
+			if resInsert.RowsAffected() == 0 {
+				return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
+			}
+		} else {
+			resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+				post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID,
+				"{" + strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]") + "}")
+
+			fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
+			//if err != nil {
+			//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
+			//}
+
+			if resInsert.RowsAffected() == 0 {
+				return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
+			}
 		}
+
+
 		postsToCreate[i].Forum = existingThread.Forum
 		postsToCreate[i].Thread = existingThread.ID
 		postsToCreate[i].Created = now
 
 		// get last id
 		res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
+		if err != nil {
+			return []Post{}, errors.Wrap(err, "cant get last id"), http.StatusInternalServerError
+		}
 		for res.Next() {
 			err := res.Scan(&postsToCreate[i].ID)
 
@@ -118,6 +145,7 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		}
 
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
+
 	case "tree":
 		baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID
 
@@ -130,12 +158,15 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		}
 
 		if desc {
-			baseSQL += " ORDER BY path DESC"
+			baseSQL += " ORDER BY path DESC, id DESC"
 		} else {
-			baseSQL += " ORDER BY path"
+			baseSQL += " ORDER BY path, id"
 		}
 
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
+
+		fmt.Println("---===tree sort===---")
+		fmt.Println("\tbaseSQL =", baseSQL)
 	}
 
 	res, err := conn.Query(baseSQL)
