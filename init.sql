@@ -1,11 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS CITEXT;
 
-TRUNCATE TABLE forum_users, forum_forum, forum_thread, forum_post, forum_vote CASCADE;
-TRUNCATE TABLE forum_forum CASCADE;
-TRUNCATE TABLE forum_thread CASCADE;
-TRUNCATE TABLE forum_post CASCADE;
-TRUNCATE TABLE forum_vote CASCADE;
-
 DROP TABLE IF EXISTS forum_users CASCADE;
 DROP TABLE IF EXISTS forum_forum CASCADE;
 DROP TABLE IF EXISTS forum_thread CASCADE;

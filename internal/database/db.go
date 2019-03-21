@@ -7,9 +7,9 @@ import (
 var config = pgx.ConnConfig{
 	Host:     "localhost",
 	Port:     5432,
-	Database: "postgres",
-	User:     "",
-	Password: "",
+	Database: "docker",
+	User:     "docker",
+	Password: "docker",
 }
 
 var Connection, _ = pgx.NewConnPool(
