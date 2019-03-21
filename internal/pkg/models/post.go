@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -44,6 +45,22 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	conn := database.Connection
 
 	now := time.Now()
+	var id int64 = 0
+	// get last id
+	res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
+	if err != nil {
+		return []Post{}, errors.Wrap(err, "cant get last id"), http.StatusInternalServerError
+	}
+	for res.Next() {
+		err := res.Scan(&id)
+
+		if err != nil {
+			return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		}
+	}
+	res.Close()
+	id++
+	log.Println("\tlast id =", id)
 
 	for i, post := range postsToCreate {
 		fmt.Println("--", i, "--")
@@ -54,6 +71,12 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
 			}
 
+			fmt.Println("--== check thread id ==--")
+			fmt.Println("\tcurrent thread =", existingThread.ID)
+			fmt.Println("\tthread in post founded =", parentPostQuery.Thread)
+			fmt.Println("\tparent in post =", post.Parent)
+			fmt.Println("--==                 ==--")
+
 			if parentPostQuery.Thread != existingThread.ID {
 				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
 			}
@@ -61,49 +84,27 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 			post.Path = append(parentPostQuery.Path, parentPostQuery.ID)
 		}
 
-		if post.Path == nil {
-			resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread) VALUES ($1, $2, $3, $4, $5, $6)`,
-				post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID)
+		post.Path = append(post.Path, id)
 
-			//if err != nil {
-			//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
-			//}
+		resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID,
+			"{"+strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]")+"}")
 
-			if resInsert.RowsAffected() == 0 {
-				return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
-			}
-		} else {
-			resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-				post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID,
-				"{" + strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]") + "}")
+		fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
 
-			fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
-			//if err != nil {
-			//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
-			//}
+		//if err != nil {
+		//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
+		//}
 
-			if resInsert.RowsAffected() == 0 {
-				return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
-			}
+		if resInsert.RowsAffected() == 0 {
+			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
 		}
-
 
 		postsToCreate[i].Forum = existingThread.Forum
 		postsToCreate[i].Thread = existingThread.ID
 		postsToCreate[i].Created = now
-
-		// get last id
-		res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
-		if err != nil {
-			return []Post{}, errors.Wrap(err, "cant get last id"), http.StatusInternalServerError
-		}
-		for res.Next() {
-			err := res.Scan(&postsToCreate[i].ID)
-
-			if err != nil {
-				return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-			}
-		}
+		postsToCreate[i].ID = id
+		id++
 
 		PrintPost(postsToCreate[i])
 	}
