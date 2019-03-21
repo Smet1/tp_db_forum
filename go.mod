@@ -19,7 +19,7 @@ require (
 	github.com/jackc/pgx v3.3.0+incompatible
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/gommon v0.2.8 // indirect
-	github.com/lib/pq v1.0.0 // indirect
+	github.com/lib/pq v1.0.0
 	github.com/mailru/easyjson v0.0.0-20190312143242-1de009706dbe
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect

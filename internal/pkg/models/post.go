@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -82,7 +83,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
 			}
 
-			post.Path = append(parentPostQuery.Path, parentPostQuery.ID)
+			post.Path = parentPostQuery.Path
 		}
 
 		post.Path = append(post.Path, id)
@@ -160,7 +161,7 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 
 			childPostsQuery, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread" +
 				" FROM forum_post" +
-				" WHERE path[1] = $1 ORDER BY id", val.ID)
+				" WHERE path[1] = $1 ORDER BY path", val.ID)
 
 			if err != nil {
 				childPostsQuery.Close()
@@ -248,9 +249,9 @@ func TreeSort(parentThread Thread, limit int, since int, sort string, desc bool)
 
 	if since != 0 {
 		if desc {
-			baseSQL += " AND id < (SELECT path FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+			baseSQL += " AND path < (SELECT path FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
 		} else {
-			baseSQL += " AND id > (SELECT path FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+			baseSQL += " AND path > (SELECT path FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
 		}
 	}
 
@@ -341,7 +342,7 @@ func UpdatePost(existingPost Post, newPost Post) (Post, error, int) {
 func GetPostByID(id int64) (Post, error, int) {
 	conn := database.Connection
 
-	res, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE id = $1", id)
+	res, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread, path FROM forum_post WHERE id = $1", id)
 	defer res.Close()
 
 	if err != nil {
@@ -351,11 +352,14 @@ func GetPostByID(id int64) (Post, error, int) {
 	post := Post{}
 
 	for res.Next() {
-		err := res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+		//path := []pgtype.ArrayDimension{}
+		err := res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread, pq.Array(&post.Path))
 
 		if err != nil {
 			return Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 		}
+
+		fmt.Println("GetPostByID::path = ", post.Path)
 
 		return post, nil, http.StatusOK
 	}
