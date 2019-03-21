@@ -42,6 +42,7 @@ func PrintPost(t Post) {
 }
 
 func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, int) {
+	// TODO(): транзакция, по тз не пройдет (при косяке в 1 посте остальные до него заносятся в БД)
 	conn := database.Connection
 
 	now := time.Now()
@@ -119,55 +120,71 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 }
 
 func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc bool) ([]Post, error, int) {
+	if sort == "" {
+		sort = "flat"
+	}
 	// tree && parent tree UNDONE
 	conn := database.Connection
 
 	baseSQL := ""
 	sortedPosts := make([]Post, 0, 1)
-	strID := strconv.FormatInt(int64(parentThread.ID), 10)
+	//strID := strconv.FormatInt(int64(parentThread.ID), 10)
 
 	switch sort {
 	case "flat":
-		// author, created, forum, isedited, message, parent, thread
-		baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID
+		baseSQL = FlatSort(parentThread, limit, since, sort, desc)
 
-		if since != 0 {
-			if desc {
-				baseSQL += " AND id < " + strconv.Itoa(since)
-			} else {
-				baseSQL += " AND id > " + strconv.Itoa(since)
-			}
-		}
-
-		if desc {
-			baseSQL += " ORDER BY id DESC"
-		} else {
-			baseSQL += " ORDER BY id"
-		}
-
-		baseSQL += " LIMIT " + strconv.Itoa(limit)
+		fmt.Println("---===flat sort===---")
+		fmt.Println("\tbaseSQL =", baseSQL)
 
 	case "tree":
-		baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID
-
-		if since != 0 {
-			if desc {
-				baseSQL += " AND id < (SELECT path FROM post WHERE id = " + strconv.Itoa(since) + ")"
-			} else {
-				baseSQL += " AND id > (SELECT path FROM post WHERE id = " + strconv.Itoa(since) + ")"
-			}
-		}
-
-		if desc {
-			baseSQL += " ORDER BY path DESC, id DESC"
-		} else {
-			baseSQL += " ORDER BY path, id"
-		}
-
-		baseSQL += " LIMIT " + strconv.Itoa(limit)
+		baseSQL = TreeSort(parentThread, limit, since, sort, desc)
 
 		fmt.Println("---===tree sort===---")
 		fmt.Println("\tbaseSQL =", baseSQL)
+
+	case "parent_tree":
+		rootPosts, err := ParentTreeSort(parentThread, limit, since, sort, desc)
+		if err != nil {
+			return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
+		}
+
+		if len(rootPosts) == 0 {
+			log.Println("parent tree: no posts found")
+
+			return []Post{}, nil, http.StatusOK
+		}
+
+		for _, val := range rootPosts {
+			//sortedPosts = append(sortedPosts, val)
+
+			childPostsQuery, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread" +
+				" FROM forum_post" +
+				" WHERE path[1] = $1 ORDER BY id", val.ID)
+
+			if err != nil {
+				childPostsQuery.Close()
+
+				return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			}
+
+			post := Post{}
+
+			for childPostsQuery.Next() {
+				err := childPostsQuery.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+
+				if err != nil {
+					childPostsQuery.Close()
+
+					return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+				}
+				sortedPosts = append(sortedPosts, post)
+			}
+
+			childPostsQuery.Close()
+		}
+
+		return sortedPosts, nil, http.StatusOK
 	}
 
 	res, err := conn.Query(baseSQL)
@@ -188,7 +205,112 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		sortedPosts = append(sortedPosts, post)
 	}
 
+	if len(sortedPosts) == 0 {
+		log.Println("GetSortedPosts: (not parent_tree sort) not posts found")
+
+		return []Post{}, nil, http.StatusOK
+	}
+
 	return sortedPosts, nil, http.StatusOK
+}
+
+func FlatSort(parentThread Thread, limit int, since int, sort string, desc bool) string {
+	strID := strconv.FormatInt(int64(parentThread.ID), 10)
+	baseSQL := ""
+
+	// author, created, forum, isedited, message, parent, thread
+	baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID
+
+	if since != 0 {
+		if desc {
+			baseSQL += " AND id < " + strconv.Itoa(since)
+		} else {
+			baseSQL += " AND id > " + strconv.Itoa(since)
+		}
+	}
+
+	if desc {
+		baseSQL += " ORDER BY id DESC"
+	} else {
+		baseSQL += " ORDER BY id"
+	}
+
+	baseSQL += " LIMIT " + strconv.Itoa(limit)
+
+	return baseSQL
+}
+
+func TreeSort(parentThread Thread, limit int, since int, sort string, desc bool) string {
+	strID := strconv.FormatInt(int64(parentThread.ID), 10)
+	baseSQL := ""
+
+	baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID
+
+	if since != 0 {
+		if desc {
+			baseSQL += " AND id < (SELECT path FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+		} else {
+			baseSQL += " AND id > (SELECT path FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+		}
+	}
+
+	if desc {
+		baseSQL += " ORDER BY path DESC, id DESC"
+	} else {
+		baseSQL += " ORDER BY path, id"
+	}
+
+	baseSQL += " LIMIT " + strconv.Itoa(limit)
+
+	return baseSQL
+}
+
+func ParentTreeSort(parentThread Thread, limit int, since int, sort string, desc bool) ([]Post, error) {
+	conn := database.Connection
+	strID := strconv.FormatInt(int64(parentThread.ID), 10)
+	baseSQL := ""
+
+	baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE thread = " + strID + " AND parent = 0"
+
+	if since != 0 {
+		if desc {
+			baseSQL += " AND path[1] < (SELECT path[1] FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+		} else {
+			baseSQL += " AND path[1] > (SELECT path[1] FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+		}
+	}
+
+	if desc {
+		baseSQL += " ORDER BY id DESC"
+	} else {
+		baseSQL += " ORDER BY id"
+	}
+
+	baseSQL += " LIMIT " + strconv.Itoa(limit)
+
+	fmt.Println("---===parent_tree sort===---")
+	fmt.Println("\tbaseSQL =", baseSQL)
+
+	rootPostsRaw, err := conn.Query(baseSQL)
+	defer rootPostsRaw.Close()
+
+	if err != nil {
+		return []Post{}, errors.Wrap(err, "db query result parsing error")
+	}
+
+	post := Post{}
+	rootPosts := make([]Post, 0, 1)
+
+	for rootPostsRaw.Next() {
+		err := rootPostsRaw.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+
+		if err != nil {
+			return []Post{}, errors.Wrap(err, "db query result parsing error")
+		}
+		rootPosts = append(rootPosts, post)
+	}
+
+	return rootPosts, nil
 }
 
 func UpdatePost(existingPost Post, newPost Post) (Post, error, int) {

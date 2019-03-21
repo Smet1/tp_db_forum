@@ -83,11 +83,11 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	sort := query.Get("sort")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	fmt.Println(query)
-	fmt.Println(limit)
-	fmt.Println(since)
-	fmt.Println(sort)
-	fmt.Println(desc)
+	fmt.Println("query =", query)
+	fmt.Println("limit =", limit)
+	fmt.Println("since =", since)
+	fmt.Println("sort =", sort)
+	fmt.Println("desc =", desc)
 
 	sortedPosts, err, status := models.GetSortedPosts(existingThread, limit, since, sort, desc)
 	if err != nil {
