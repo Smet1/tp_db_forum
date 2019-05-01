@@ -14,7 +14,7 @@ type Vote struct {
 	Thread   int32  `json:"thread"`
 }
 
-func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
+func CreateVoteAndUpdateThread(voteToCreate Vote, idLog int32) (Thread, error, int, int8) {
 	conn := database.Connection
 
 	voiceDiff := voteToCreate.Voice
@@ -28,16 +28,16 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 
 		voteBeforeUpdate, err := GetVoteByNicknameAndThreadID(voteToCreate.Nickname, voteToCreate.Thread)
 		if err != nil {
-			return Thread{}, errors.Wrap(err, "Cant find existing vote"), http.StatusInternalServerError
+			return Thread{}, errors.Wrap(err, "Cant find existing vote"), http.StatusInternalServerError, 0
 		}
 
 		voteToCreate, err := UpdateVote(voteToCreate.Nickname, voteToCreate.Thread, voteToCreate.Voice)
 		if err != nil {
-			return Thread{}, errors.Wrap(err, "Cant update existing vote"), http.StatusInternalServerError
+			return Thread{}, errors.Wrap(err, "Cant update existing vote"), http.StatusInternalServerError, 0
 		}
 
 		// если меняем отзыв, то нужно откатить предыдущий и накатить новый, поэтому ±2
-		fmt.Println("---=== check voiceDiff =", voiceDiff, "&& voteToCreate.Voice =", voteToCreate.Voice,
+		fmt.Println("---=== idLog =", idLog, "check voiceDiff =", voiceDiff, "&& voteToCreate.Voice =", voteToCreate.Voice,
 			"&& voteBeforeUpdate.Voice = ", voteBeforeUpdate.Voice, "vote =", voteBeforeUpdate)
 
 		if voteToCreate.Voice == -1 && voteToCreate.Voice != voteBeforeUpdate.Voice {
@@ -51,12 +51,12 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 		fmt.Println("---=== after check", voiceDiff)
 	}
 
-	updatedThread, err, status := UpdateThreadVote(voteToCreate.Thread, voiceDiff)
+	updatedThread, err, status := UpdateThreadVote(voteToCreate.Thread, voiceDiff, idLog)
 	if err != nil {
-		return Thread{}, errors.Wrap(err, "cant update thread"), status
+		return Thread{}, errors.Wrap(err, "cant update thread"), status, 0
 	}
 
-	return updatedThread, nil, http.StatusOK
+	return updatedThread, nil, http.StatusOK, voiceDiff
 }
 
 func GetVoteByNicknameAndThreadID(nickname string, threadID int32) (Vote, error) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -21,8 +22,9 @@ func PrintThread(t models.Thread) {
 }
 
 func CreateThread(res http.ResponseWriter, req *http.Request) {
+	idLog := rand.Int31n(1000)
 	log.Println("=============")
-	log.Println("CreateThread", req.URL)
+	log.Println("CreateThread, idLog=", idLog, req.URL)
 
 	slugName, err := checkVar("slug", req)
 	if err != nil {
@@ -73,7 +75,7 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 		//return
 	}
 
-	fmt.Println("\tCREATED")
+	fmt.Println("\tCREATED, idLog=", idLog)
 	PrintThread(createdThread)
 
 	ResponseObject(res, http.StatusCreated, createdThread)

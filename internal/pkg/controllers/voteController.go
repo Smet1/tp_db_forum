@@ -11,8 +11,9 @@ import (
 )
 
 func CreateVote(res http.ResponseWriter, req *http.Request) {
+	idLog := rand.Int31n(1000)
 	log.Println("=============")
-	log.Println("CreateVote", req.URL)
+	log.Println("CreateVote idLog=", idLog, req.URL)
 
 	slugOrId, err := checkVar("slug_or_id", req)
 	if err != nil {
@@ -54,14 +55,13 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	voteToCreate.Thread = existingThread.ID
 	voteToCreate.Nickname = existingUser.Nickname
 
-	updatedThread, err, status := models.CreateVoteAndUpdateThread(voteToCreate)
+	updatedThread, err, status, diff := models.CreateVoteAndUpdateThread(voteToCreate, idLog)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
 		return
 	}
 
-	idLog := rand.Int31n(1000)
 	fmt.Println("--VOTE-- idLog=", idLog)
 	fmt.Println(voteToCreate)
 	fmt.Println("--before vote-- idLog=", idLog)
@@ -69,6 +69,12 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	fmt.Println("--after vote-- idLog=", idLog)
 	PrintThread(updatedThread)
 
+	//existingThread.Votes += int32(diff)
+	//fmt.Println("--returning hack thread-- idLog=", idLog)
+	//PrintThread(existingThread)
+	fmt.Println("\t\tvote diff = ", diff, int32(diff))
+
+	//ResponseObject(res, http.StatusOK, existingThread)
 	ResponseObject(res, http.StatusOK, updatedThread)
 }
 
