@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -158,10 +159,13 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 		}
 
 		if res.Next() {
-			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			nullString := pgtype.Text{}
+			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
 			if err != nil {
 				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 			}
+
+			t.Slug = nullString.String
 
 			return t, nil, http.StatusOK
 		}
@@ -178,10 +182,13 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 		}
 
 		if res.Next() {
-			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			nullString := pgtype.Text{}
+			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
 			if err != nil {
 				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 			}
+
+			t.Slug = nullString.String
 
 			return t, nil, http.StatusOK
 		}
@@ -197,10 +204,13 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 		}
 
 		if res.Next() {
-			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+			nullString := pgtype.Text{}
+			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
 			if err != nil {
 				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 			}
+
+			t.Slug = nullString.String
 
 			return t, nil, http.StatusOK
 		}
@@ -214,15 +224,15 @@ func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 
 	fmt.Println("UpdateThreadVote")
 	fmt.Println(voteValue)
-	plus := "+"
-	if voteValue < 0 {
-		plus = "-"
-		voteValue = -voteValue
-	}
+	//plus := "+"
+	//if voteValue < 0 {
+	//	plus = "-"
+	//	voteValue = -voteValue
+	//}
 
-	fmt.Println(plus)
-
-	res, err := conn.Exec(`UPDATE forum_thread SET votes = votes`+plus+`$1 WHERE id = $2`, voteValue, threadId)
+	//fmt.Println(plus, voteValue)
+	fmt.Println(voteValue)
+	res, err := conn.Exec(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2`, voteValue, threadId)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict
 	}
@@ -231,7 +241,10 @@ func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 		return Thread{}, errors.New("not found"), http.StatusNotFound
 	}
 
-	updatedThread, _, _ := GetThreadByIDorSlug(int(threadId), "")
+	updatedThread, err, _ := GetThreadByIDorSlug(int(threadId), "")
+	if err != nil {
+		log.Println("UpdateThreadVote: updated thread not found", err)
+	}
 	return updatedThread, nil, http.StatusOK
 }
 

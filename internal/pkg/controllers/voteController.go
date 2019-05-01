@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -16,6 +17,8 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	slugOrId, err := checkVar("slug_or_id", req)
 	if err != nil {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+
+		log.Println("CreateVote", err)
 		return
 	}
 	slug := slugOrId.(string)
@@ -28,11 +31,9 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, errors.Wrap(err, "slug not found").Error())
 
+		log.Println("CreateVote:", errors.Wrap(err, "slug not found").Error(), "id = ", id, "slug = ", slug)
 		return
 	}
-
-	fmt.Println("--before vote--")
-	PrintThread(existingThread)
 
 	voteToCreate := models.Vote{}
 	status, err = ParseRequestIntoStruct(req, &voteToCreate)
@@ -53,8 +54,6 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	voteToCreate.Thread = existingThread.ID
 	voteToCreate.Nickname = existingUser.Nickname
 
-	fmt.Println(voteToCreate)
-
 	updatedThread, err, status := models.CreateVoteAndUpdateThread(voteToCreate)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
@@ -62,7 +61,12 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println("--after vote--")
+	idLog := rand.Int31n(1000)
+	fmt.Println("--VOTE-- idLog=", idLog)
+	fmt.Println(voteToCreate)
+	fmt.Println("--before vote-- idLog=", idLog)
+	PrintThread(existingThread)
+	fmt.Println("--after vote-- idLog=", idLog)
 	PrintThread(updatedThread)
 
 	ResponseObject(res, http.StatusOK, updatedThread)

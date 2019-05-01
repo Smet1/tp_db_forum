@@ -377,6 +377,7 @@ func GetPostDetails(existingPost Post, related []string) (PostFull, error, int) 
 		case "user":
 			baseSQL = `SELECT about, email, fullname, nickname FROM forum_users WHERE nickname = $1`
 			res, _ := conn.Query(baseSQL, existingPost.Author)
+			//defer res.Close()
 
 			u := User{}
 
@@ -385,10 +386,12 @@ func GetPostDetails(existingPost Post, related []string) (PostFull, error, int) 
 			}
 
 			postFull.Author = &u
+			res.Close()
 
 		case "forum":
 			baseSQL = `SELECT posts, slug, threads, title, "user" FROM forum_forum WHERE slug = $1`
 			res, _ := conn.Query(baseSQL, existingPost.Forum)
+			//defer res.Close()
 
 			f := Forum{}
 
@@ -397,9 +400,12 @@ func GetPostDetails(existingPost Post, related []string) (PostFull, error, int) 
 			}
 
 			postFull.Forum = &f
+			res.Close()
+
 		case "thread":
 			baseSQL = `SELECT author, created, forum, id, message, slug, title, votes FROM forum_thread WHERE id = $1`
 			res, _ := conn.Query(baseSQL, existingPost.Thread)
+			//defer res.Close()
 
 			t := Thread{}
 
@@ -408,6 +414,8 @@ func GetPostDetails(existingPost Post, related []string) (PostFull, error, int) 
 			}
 
 			postFull.Thread = &t
+			res.Close()
+
 		}
 	}
 

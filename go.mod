@@ -7,7 +7,7 @@ require (
 	github.com/aryann/difflib v0.0.0-20170710044230-e206f873d14a // indirect
 	github.com/bozaro/golorem v0.0.0-20170501165920-50e5b610280b // indirect
 	github.com/bozaro/tech-db-forum v0.2.2 // indirect
-	github.com/buaazp/fasthttprouter v0.1.1
+	github.com/buaazp/fasthttprouter v0.1.1 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
 	github.com/go-openapi/errors v0.18.0 // indirect
 	github.com/go-openapi/runtime v0.18.0 // indirect
@@ -31,5 +31,5 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
 	github.com/tinylib/msgp v1.1.0 // indirect
-	github.com/valyala/fasthttp v1.2.0
+	github.com/valyala/fasthttp v1.2.0 // indirect
 )

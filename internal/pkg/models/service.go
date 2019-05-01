@@ -42,7 +42,8 @@ func GetDBCountData() (Status, error, int) {
 func ClearDB() (error, int) {
 	conn := database.Connection
 
-	_, err := conn.Query("TRUNCATE TABLE forum_users, forum_forum, forum_thread, forum_post, forum_vote CASCADE")
+	res, err := conn.Query("TRUNCATE TABLE forum_users, forum_forum, forum_thread, forum_post, forum_vote CASCADE")
+	defer res.Close()
 
 	if err != nil {
 		return errors.Wrap(err, "cant truncate db"), http.StatusInternalServerError

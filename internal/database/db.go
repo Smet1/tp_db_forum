@@ -12,8 +12,12 @@ var config = pgx.ConnConfig{
 	Password: "docker",
 }
 
-var Connection, _ = pgx.NewConnPool(
-	pgx.ConnPoolConfig{
-		ConnConfig:     config,
-		MaxConnections: 1000,
-	})
+var Connection *pgx.ConnPool
+
+func init() {
+	Connection, _ = pgx.NewConnPool(
+		pgx.ConnPoolConfig{
+			ConnConfig:     config,
+			MaxConnections: 50,
+		})
+}
