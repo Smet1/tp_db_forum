@@ -1,14 +1,13 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 	"tp_db_forum/internal/pkg/models"
 )
 
 func GetDBStatus(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetDBStatus", req.URL)
+	//log.Println("=============")
+	//log.Println("GetDBStatus", req.URL)
 
 	stats, err, status := models.GetDBCountData()
 	if err != nil {
@@ -21,8 +20,8 @@ func GetDBStatus(res http.ResponseWriter, req *http.Request) {
 }
 
 func ClearDB(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("ClearDB", req.URL)
+	//log.Println("=============")
+	//log.Println("ClearDB", req.URL)
 
 	err, status := models.ClearDB()
 	if err != nil {

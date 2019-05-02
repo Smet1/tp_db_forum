@@ -12,7 +12,7 @@ type Vote struct {
 	Thread   int32  `json:"thread"`
 }
 
-func CreateVoteAndUpdateThread(voteToCreate Vote, idLog int32) (Thread, error, int, int8) {
+func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int, int8) {
 	conn := database.Connection
 
 	voiceDiff := voteToCreate.Voice
@@ -49,7 +49,7 @@ func CreateVoteAndUpdateThread(voteToCreate Vote, idLog int32) (Thread, error, i
 		//fmt.Println("---=== after check", voiceDiff)
 	}
 
-	updatedThread, err, status := UpdateThreadVote(voteToCreate.Thread, voiceDiff, idLog)
+	updatedThread, err, status := UpdateThreadVote(voteToCreate.Thread, voiceDiff)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cant update thread"), status, 0
 	}

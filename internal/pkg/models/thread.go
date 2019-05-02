@@ -1,11 +1,9 @@
 package models
 
 import (
-	"fmt"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -31,14 +29,14 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		return Thread{}, errors.Wrap(err, "cant find slug"), http.StatusNotFound
 	}
 	threadToCreate.Forum = existingForum.Slug
-	fmt.Println("\t\tDB forum.slug = ", existingForum.Slug)
+	//fmt.Println("\t\tDB forum.slug = ", existingForum.Slug)
 
 	existingUser, err := GetUserByNickname(threadToCreate.Author)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cant find user"), http.StatusNotFound
 	}
 	threadToCreate.Author = existingUser.Nickname
-	fmt.Println("\t\tDB user.nickname = ", existingUser.Nickname)
+	//fmt.Println("\t\tDB user.nickname = ", existingUser.Nickname)
 
 	//if threadToCreate.Slug == "" {
 	//	resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, NULL, $5)`,
@@ -160,7 +158,7 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
 	}
 
-	log.Println(baseSQL)
+	//log.Println(baseSQL)
 	res, err := conn.Query(baseSQL)
 	if err != nil {
 		return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
@@ -256,7 +254,7 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 	}
 }
 
-func UpdateThreadVote(threadId int32, voteValue int8, idLog int32) (Thread, error, int) {
+func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 	conn := database.Connection
 	tx, err := conn.Begin()
 	defer tx.Rollback()
@@ -317,7 +315,7 @@ func UpdateThread(existingThread Thread, newThread Thread) (Thread, error, int) 
 
 	baseSQL += " WHERE slug = '" + existingThread.Slug + "'"
 
-	fmt.Println("\t", baseSQL)
+	//fmt.Println("\t", baseSQL)
 	res, err := conn.Exec(baseSQL)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict

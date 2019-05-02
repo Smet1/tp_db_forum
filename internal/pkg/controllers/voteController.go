@@ -2,15 +2,13 @@ package controllers
 
 import (
 	"github.com/pkg/errors"
-	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateVote(res http.ResponseWriter, req *http.Request) {
-	idLog := rand.Int31n(1000)
+	//idLog := rand.Int31n(1000)
 	//log.Println("=============")
 	//log.Println("CreateVote idLog=", idLog, req.URL)
 
@@ -18,7 +16,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 
-		log.Println("CreateVote", err)
+		//log.Println("CreateVote", err)
 		return
 	}
 	slug := slugOrId.(string)
@@ -31,7 +29,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, errors.Wrap(err, "slug not found").Error())
 
-		log.Println("CreateVote:", errors.Wrap(err, "slug not found").Error(), "id = ", id, "slug = ", slug)
+		//log.Println("CreateVote:", errors.Wrap(err, "slug not found").Error(), "id = ", id, "slug = ", slug)
 		return
 	}
 
@@ -40,7 +38,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
 
@@ -54,7 +52,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	voteToCreate.Thread = existingThread.ID
 	voteToCreate.Nickname = existingUser.Nickname
 
-	updatedThread, err, status, _ := models.CreateVoteAndUpdateThread(voteToCreate, idLog)
+	updatedThread, err, status, _ := models.CreateVoteAndUpdateThread(voteToCreate)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
@@ -78,8 +76,8 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetThreadDetails", req.URL)
+	//log.Println("=============")
+	//log.Println("GetThreadDetails", req.URL)
 
 	slugOrId, err := checkVar("slug_or_id", req)
 	if err != nil {

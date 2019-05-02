@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -43,8 +41,8 @@ func checkVar(varName string, req *http.Request) (interface{}, error) {
 }
 
 func GetUserProfile(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetUserProfile", req.URL)
+	//log.Println("=============")
+	//log.Println("GetUserProfile", req.URL)
 
 	searchingNickname, err := checkVar("nickname", req)
 	if err != nil {
@@ -62,8 +60,8 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("UpdateUserProfile", req.URL)
+	//log.Println("=============")
+	//log.Println("UpdateUserProfile", req.URL)
 
 	nicknameToUpdate, err := checkVar("nickname", req)
 	if err != nil {
@@ -80,7 +78,7 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
 	u.Nickname = nicknameToUpdate.(string)
@@ -95,8 +93,8 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func CreateUser(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("CreateUser", req.URL)
+	//log.Println("=============")
+	//log.Println("CreateUser", req.URL)
 
 	nicknameToCreate, err := checkVar("nickname", req)
 	if err != nil {
@@ -116,7 +114,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
 
@@ -144,18 +142,18 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetForumUsers(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetForumUsers", req.URL)
+	//log.Println("=============")
+	//log.Println("GetForumUsers", req.URL)
 
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
 	since := query.Get("since")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	fmt.Println(query)
-	fmt.Println(limit)
-	fmt.Println(since)
-	fmt.Println(desc)
+	//fmt.Println(query)
+	//fmt.Println(limit)
+	//fmt.Println(since)
+	//fmt.Println(desc)
 
 	searchingSlug, err := checkVar("slug", req)
 	if err != nil {
@@ -163,7 +161,7 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(searchingSlug)
+	//fmt.Println(searchingSlug)
 
 	existingForum, err := models.GetForumBySlug(searchingSlug.(string))
 	if err != nil {

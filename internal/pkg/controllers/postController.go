@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,7 +37,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
 
@@ -47,7 +45,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "models.CreatePost error"))
+		//log.Println("\t", errors.Wrap(err, "models.CreatePost error"))
 		return
 	}
 
@@ -55,8 +53,8 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetThreadPosts", req.URL)
+	//log.Println("=============")
+	//log.Println("GetThreadPosts", req.URL)
 
 	slugOrId, err := checkVar("slug_or_id", req)
 	if err != nil {
@@ -75,7 +73,7 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(existingThread)
+	//fmt.Println(existingThread)
 
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
@@ -83,11 +81,11 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	sort := query.Get("sort")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	fmt.Println("query =", query)
-	fmt.Println("limit =", limit)
-	fmt.Println("since =", since)
-	fmt.Println("sort =", sort)
-	fmt.Println("desc =", desc)
+	//fmt.Println("query =", query)
+	//fmt.Println("limit =", limit)
+	//fmt.Println("since =", since)
+	//fmt.Println("sort =", sort)
+	//fmt.Println("desc =", desc)
 
 	sortedPosts, err, status := models.GetSortedPosts(existingThread, limit, since, sort, desc)
 	if err != nil {
@@ -100,8 +98,8 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdatePost(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("UpdatePost", req.URL)
+	//log.Println("=============")
+	//log.Println("UpdatePost", req.URL)
 
 	postId, err := checkVar("id", req)
 	if err != nil {
@@ -126,19 +124,19 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
-	fmt.Println("--== existing post ==--")
-	models.PrintPost(existingPost)
+	//fmt.Println("--== existing post ==--")
+	//models.PrintPost(existingPost)
 
-	fmt.Println("--== new post ==--")
-	models.PrintPost(newPost)
+	//fmt.Println("--== new post ==--")
+	//models.PrintPost(newPost)
 
 	updatedPost, err, status := models.UpdatePost(existingPost, newPost)
 
-	fmt.Println("--== updated ==--")
-	models.PrintPost(updatedPost)
+	//fmt.Println("--== updated ==--")
+	//models.PrintPost(updatedPost)
 
 	if err != nil {
 		ErrResponse(res, status, err.Error())
@@ -150,8 +148,8 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetPostInfo(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetPostInfo", req.URL)
+	//log.Println("=============")
+	//log.Println("GetPostInfo", req.URL)
 
 	slug, err := checkVar("id", req)
 	if err != nil {
@@ -164,10 +162,10 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 	}
 
 	query := req.URL.Query()
-	fmt.Println(query)
+	//fmt.Println(query)
 
 	related := strings.Split(query.Get("related"), ",")
-	fmt.Println(related)
+	//fmt.Println(related)
 
 	existingPost, err, status := models.GetPostByID(id)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -178,14 +177,14 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 	case "flat":
 		baseSQL = FlatSort(parentThread, limit, since, sort, desc)
 
-		fmt.Println("---===flat sort===---")
-		fmt.Println("\tbaseSQL =", baseSQL)
+		//fmt.Println("---===flat sort===---")
+		//fmt.Println("\tbaseSQL =", baseSQL)
 
 	case "tree":
 		baseSQL = TreeSort(parentThread, limit, since, sort, desc)
 
-		fmt.Println("---===tree sort===---")
-		fmt.Println("\tbaseSQL =", baseSQL)
+		//fmt.Println("---===tree sort===---")
+		//fmt.Println("\tbaseSQL =", baseSQL)
 
 	case "parent_tree":
 		rootPosts, err := ParentTreeSort(parentThread, limit, since, sort, desc)
@@ -194,7 +193,7 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		}
 
 		if len(rootPosts) == 0 {
-			log.Println("parent tree: no posts found")
+			//log.Println("parent tree: no posts found")
 
 			return []Post{}, nil, http.StatusOK
 		}
@@ -250,7 +249,7 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 	}
 
 	if len(sortedPosts) == 0 {
-		log.Println("GetSortedPosts: (not parent_tree sort) not posts found")
+		//log.Println("GetSortedPosts: (not parent_tree sort) not posts found")
 
 		return []Post{}, nil, http.StatusOK
 	}
@@ -332,15 +331,14 @@ func ParentTreeSort(parentThread Thread, limit int, since int, sort string, desc
 
 	baseSQL += " LIMIT " + strconv.Itoa(limit)
 
-	fmt.Println("---===parent_tree sort===---")
-	fmt.Println("\tbaseSQL =", baseSQL)
+	//fmt.Println("---===parent_tree sort===---")
+	//fmt.Println("\tbaseSQL =", baseSQL)
 
 	rootPostsRaw, err := conn.Query(baseSQL)
-	defer rootPostsRaw.Close()
-
 	if err != nil {
 		return []Post{}, errors.Wrap(err, "db query result parsing error")
 	}
+	defer rootPostsRaw.Close()
 
 	post := Post{}
 	rootPosts := make([]Post, 0, 1)

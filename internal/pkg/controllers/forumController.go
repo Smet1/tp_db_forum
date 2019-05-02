@@ -1,35 +1,33 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
-	"log"
 	"net/http"
 	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("CreateForum", req.URL)
+	//log.Println("=============")
+	//log.Println("CreateForum", req.URL)
 
 	f := models.Forum{}
 	status, err := ParseRequestIntoStruct(req, &f)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 		return
 	}
 
 	createdForum, err := models.CreateForum(f)
 	if err != nil {
-		user, err := models.GetUserByNickname(f.User)
+		_, err := models.GetUserByNickname(f.User)
 		if err != nil {
 			ErrResponse(res, http.StatusNotFound, "Can't find user with nickname "+f.User)
 			return
 		}
 
-		fmt.Println(user)
+		//fmt.Println(user)
 
 		existingForum, err := models.GetForumBySlug(f.Slug)
 		if err != nil {
@@ -45,8 +43,8 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetForum", req.URL)
+	//log.Println("=============")
+	//log.Println("GetForum", req.URL)
 
 	searchingSlug, err := checkVar("slug", req)
 	if err != nil {

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
@@ -188,14 +187,13 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
 	}
 
-	fmt.Println("\t", baseSQL)
+	//fmt.Println("\t", baseSQL)
 
 	res, err := conn.Query(baseSQL)
-	defer res.Close()
-
 	if err != nil {
 		return []User{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
 	}
+	defer res.Close()
 
 	queriedUsers := make([]User, 0, 1)
 	u := User{}
