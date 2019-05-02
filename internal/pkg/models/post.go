@@ -386,11 +386,10 @@ func GetPostByID(id int64) (Post, error, int) {
 	conn := database.Connection
 
 	res, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread, path FROM forum_post WHERE id = $1", id)
-	defer res.Close()
-
 	if err != nil {
 		return Post{}, errors.Wrap(err, "cannot get post"), http.StatusNotFound
 	}
+	defer res.Close()
 
 	post := Post{}
 
@@ -402,7 +401,7 @@ func GetPostByID(id int64) (Post, error, int) {
 			return Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 		}
 
-		fmt.Println("GetPostByID::path = ", post.Path)
+		//fmt.Println("GetPostByID::path = ", post.Path)
 
 		return post, nil, http.StatusOK
 	}

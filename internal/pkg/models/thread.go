@@ -162,20 +162,21 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 
 	log.Println(baseSQL)
 	res, err := conn.Query(baseSQL)
-	defer res.Close()
-
 	if err != nil {
 		return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
 	}
+	defer res.Close()
 
 	t := Thread{}
-
+	nullSlug := &pgtype.Varchar{}
 	for res.Next() {
-		err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+		err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, nullSlug, &t.Title, &t.Votes)
 
 		if err != nil {
 			return []Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
 		}
+		t.Slug = nullSlug.String
+
 		queriedThreads = append(queriedThreads, t)
 	}
 

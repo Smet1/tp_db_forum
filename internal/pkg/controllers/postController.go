@@ -11,8 +11,8 @@ import (
 )
 
 func CreatePosts(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("CreatePosts", req.URL)
+	//log.Println("=============")
+	//log.Println("CreatePosts", req.URL)
 
 	slugOrId, err := checkVar("slug_or_id", req)
 	if err != nil {
@@ -31,7 +31,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(existingThread)
+	//fmt.Println(existingThread)
 
 	postsToCreate := make([]models.Post, 0, 1)
 
