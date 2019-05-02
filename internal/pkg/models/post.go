@@ -64,6 +64,23 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	//res.Close()
 	//id++
 	//log.Println("\tlast id =", id)
+	mapParents := make(map[int64]Post)
+	for _, post := range postsToCreate {
+		if _, ok := mapParents[post.Parent]; !ok && post.Parent != 0 {
+			parentPostQuery, err, _ := GetPostByID(post.Parent)
+			if err != nil {
+				//log.Println("lel1")
+				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
+			}
+
+			if parentPostQuery.Thread != existingThread.ID {
+				//log.Println("lel2, parentPostQuery.Thread=", parentPostQuery.Thread, "existingThread.ID=", existingThread.ID)
+				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
+			}
+
+			mapParents[post.Parent] = parentPostQuery
+		}
+	}
 
 	// TODO(): взял у ника, переписать
 	postIdsRows, err := tx.Query(fmt.Sprintf(`SELECT nextval(pg_get_serial_sequence('forum_post', 'id'))
@@ -81,38 +98,38 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 	// до сюда
 
 	for i, post := range postsToCreate {
-		fmt.Println("--", i, "--")
+		//fmt.Println("--", i, "--")
 
-		if post.Parent != 0 {
-			parentPostQuery, err, _ := GetPostByID(post.Parent)
-			if err != nil {
-				log.Println("lel1")
-				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
-			}
+		//if post.Parent != 0 {
+		//	parentPostQuery, err, _ := GetPostByID(post.Parent)
+		//	if err != nil {
+		//		log.Println("lel1")
+		//		return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
+		//	}
+		//
+		//	fmt.Println("--== check thread id ==--")
+		//	fmt.Println("\tcurrent thread =", existingThread.ID)
+		//	fmt.Println("\tthread in post founded =", parentPostQuery.Thread)
+		//	fmt.Println("\tparent in post =", post.Parent)
+		//	fmt.Println("--==                 ==--")
+		//
+		//	if parentPostQuery.Thread != existingThread.ID {
+		//		log.Println("lel2, parentPostQuery.Thread=", parentPostQuery.Thread, "existingThread.ID=", existingThread.ID)
+		//		return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
+		//	}
+		//
+		//	post.Path = parentPostQuery.Path
+		//	//post.Path = append(post.Path, parentPostQuery.ID)
+		//}
 
-			fmt.Println("--== check thread id ==--")
-			fmt.Println("\tcurrent thread =", existingThread.ID)
-			fmt.Println("\tthread in post founded =", parentPostQuery.Thread)
-			fmt.Println("\tparent in post =", post.Parent)
-			fmt.Println("--==                 ==--")
-
-			if parentPostQuery.Thread != existingThread.ID {
-				log.Println("lel2, parentPostQuery.Thread=", parentPostQuery.Thread, "existingThread.ID=", existingThread.ID)
-				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
-			}
-
-			post.Path = parentPostQuery.Path
-			//post.Path = append(post.Path, parentPostQuery.ID)
-		}
-
-		post.Path = append(post.Path, postIds[i])
-		//postsToCreate[i].ID = postIds[i]
+		//post.Path = append(post.Path, postIds[i])
+		post.Path = append(mapParents[post.Parent].Path, postIds[i])
 
 		resInsert, err := tx.Exec(`INSERT INTO forum_post (id, author, created, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 			postIds[i], post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID,
 			"{"+strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]")+"}")
 
-		fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
+		//fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
 
 		//if err != nil {
 		//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
@@ -131,13 +148,14 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 		postsToCreate[i].ID = postIds[i]
 		//id++
 
-		PrintPost(postsToCreate[i])
+		//PrintPost(postsToCreate[i])
 	}
 
 	tx.Commit()
 
-	existingForum, _ := GetForumBySlug(existingThread.Forum)
-	status := UpdateForumStats(existingForum, "post", true, len(postsToCreate))
+	//existingForum, _ := GetForumBySlug(existingThread.Forum)
+	//status := UpdateForumStats(existingForum, "post", true, len(postsToCreate))
+	status := UpdateForumStats(Forum{Slug: existingThread.Forum}, "post", true, len(postsToCreate))
 	if status != http.StatusOK {
 		return []Post{}, errors.New("cant update forum stats"), status
 	}

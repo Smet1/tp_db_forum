@@ -263,8 +263,8 @@ func UpdateThreadVote(threadId int32, voteValue int8, idLog int32) (Thread, erro
 		return Thread{}, errors.New("not found"), http.StatusNotFound
 	}
 
-	fmt.Println("UpdateThreadVote, idLog =", idLog)
-	fmt.Println(voteValue)
+	//fmt.Println("UpdateThreadVote, idLog =", idLog)
+	//fmt.Println(voteValue)
 
 	//res, err := conn.Exec(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2`, voteValue, threadId)
 	//if err != nil {
