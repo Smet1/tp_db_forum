@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"github.com/pkg/errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -29,15 +30,20 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 		return
 	}
+
+	//t := models.Thread{}
+	//status, err := ParseRequestIntoStruct(req, &t)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
+
 	t := models.Thread{}
+	body, _ := ioutil.ReadAll(req.Body)
+	t.UnmarshalJSON(body)
 
-	status, err := ParseRequestIntoStruct(req, &t)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
-
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
 	t.Forum = slugName.(string)
 	//fmt.Println("\tGET")
 	//PrintThread(t)
@@ -132,15 +138,19 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 	if id == 0 {
 		id = -1
 	}
+
+	//t := models.Thread{}
+	//status, err := ParseRequestIntoStruct(req, &t)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
+
 	t := models.Thread{}
-
-	status, err := ParseRequestIntoStruct(req, &t)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
-
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
+	body, _ := ioutil.ReadAll(req.Body)
+	t.UnmarshalJSON(body)
 
 	//fmt.Println("--== new ==--")
 	//PrintThread(t)

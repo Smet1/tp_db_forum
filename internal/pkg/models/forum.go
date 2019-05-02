@@ -7,6 +7,7 @@ import (
 	"tp_db_forum/internal/database"
 )
 
+//easyjson:json
 type Forum struct {
 	Posts   int64  `json:"posts"`
 	Slug    string `json:"slug"`

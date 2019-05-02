@@ -6,6 +6,7 @@ import (
 	"tp_db_forum/internal/database"
 )
 
+//easyjson:json
 type Status struct {
 	Forum  int32 `json:"forum"`
 	Post   int32 `json:"post"`

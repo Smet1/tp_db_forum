@@ -10,6 +10,7 @@ import (
 	"tp_db_forum/internal/database"
 )
 
+//easyjson:json
 type Thread struct {
 	Author  string    `json:"author"`
 	Created time.Time `json:"created"`

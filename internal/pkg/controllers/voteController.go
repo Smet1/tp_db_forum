@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/pkg/errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -33,14 +34,18 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	voteToCreate := models.Vote{}
-	status, err = ParseRequestIntoStruct(req, &voteToCreate)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
+	//voteToCreate := models.Vote{}
+	//status, err = ParseRequestIntoStruct(req, &voteToCreate)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
+	voteToCreate := models.Vote{}
+	body, _ := ioutil.ReadAll(req.Body)
+	voteToCreate.UnmarshalJSON(body)
 
 	existingUser, err := models.GetUserByNickname(voteToCreate.Nickname)
 	if err != nil {

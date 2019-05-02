@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -10,19 +9,19 @@ import (
 	"tp_db_forum/internal/pkg/models"
 )
 
-func ParseRequestIntoStruct(req *http.Request, requestStruct interface{}) (int, error) {
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return http.StatusInternalServerError, errors.Wrap(err, "body parsing error")
-	}
-
-	err = json.Unmarshal(body, &requestStruct)
-	if err != nil {
-		return http.StatusInternalServerError, errors.Wrap(err, "json parsing error")
-	}
-
-	return 0, nil
-}
+//func ParseRequestIntoStruct(req *http.Request, requestStruct interface{}) (int, error) {
+//	body, err := ioutil.ReadAll(req.Body)
+//	if err != nil {
+//		return http.StatusInternalServerError, errors.Wrap(err, "body parsing error")
+//	}
+//
+//	err = json.Unmarshal(body, &requestStruct)
+//	if err != nil {
+//		return http.StatusInternalServerError, errors.Wrap(err, "json parsing error")
+//	}
+//
+//	return 0, nil
+//}
 
 func checkVar(varName string, req *http.Request) (interface{}, error) {
 	requestVariables := mux.Vars(req)
@@ -69,18 +68,23 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	u := models.User{}
+	//u := models.User{}
 
 	//body, _ := ioutil.ReadAll(req.Body)
 	//u.UnmarshalJSON(body)
 
-	status, err := ParseRequestIntoStruct(req, &u)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
+	//status, err := ParseRequestIntoStruct(req, &u)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
+	u := models.User{}
+	body, _ := ioutil.ReadAll(req.Body)
+	u.UnmarshalJSON(body)
+
 	u.Nickname = nicknameToUpdate.(string)
 
 	updatedUser, err, errCode := models.UpdateUser(u)
@@ -109,14 +113,18 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	//	return
 	//}
 
-	u := models.User{}
-	status, err := ParseRequestIntoStruct(req, &u)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
+	//u := models.User{}
+	//status, err := ParseRequestIntoStruct(req, &u)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
+	u := models.User{}
+	body, _ := ioutil.ReadAll(req.Body)
+	u.UnmarshalJSON(body)
 
 	u.Nickname = nicknameToCreate.(string)
 	//existingUser, err := models.GetUserByEmail(u.Email)
@@ -130,7 +138,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		exitingUsers, err := models.GetUserByNicknameOrEmail(u.Nickname, u.Email)
 		if err != nil {
-			ErrResponse(res, status, err.Error())
+			ErrResponse(res, http.StatusConflict, err.Error())
 			return
 		}
 

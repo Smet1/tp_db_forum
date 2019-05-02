@@ -11,6 +11,7 @@ import (
 	"tp_db_forum/internal/database"
 )
 
+//easyjson:json
 type Post struct {
 	Author   string    `json:"author"`
 	Created  time.Time `json:"created,omitempty"`
@@ -23,6 +24,10 @@ type Post struct {
 	Path     []int64   `json:"-"`
 }
 
+//easyjson:json
+type Posts []Post
+
+//easyjson:json
 type PostFull struct {
 	Author *User   `json:"author,omitempty"`
 	Forum  *Forum  `json:"forum,omitempty"`

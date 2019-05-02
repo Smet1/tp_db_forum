@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/pkg/errors"
+	"io/ioutil"
 	"net/http"
 	"tp_db_forum/internal/pkg/models"
 )
@@ -10,14 +11,18 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
 	//log.Println("CreateForum", req.URL)
 
-	f := models.Forum{}
-	status, err := ParseRequestIntoStruct(req, &f)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
+	//f := models.Forum{}
+	//status, err := ParseRequestIntoStruct(req, &f)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
+	f := models.Forum{}
+	body, _ := ioutil.ReadAll(req.Body)
+	f.UnmarshalJSON(body)
 
 	createdForum, err := models.CreateForum(f)
 	if err != nil {
@@ -31,7 +36,7 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 
 		existingForum, err := models.GetForumBySlug(f.Slug)
 		if err != nil {
-			ErrResponse(res, status, err.Error())
+			ErrResponse(res, http.StatusNotFound, err.Error())
 			return
 		}
 

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/pkg/errors"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,15 +32,18 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 
 	//fmt.Println(existingThread)
 
-	postsToCreate := make([]models.Post, 0, 1)
+	//postsToCreate := make([]models.Post, 0, 1)
+	//status, err = ParseRequestIntoStruct(req, &postsToCreate)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 
-	status, err = ParseRequestIntoStruct(req, &postsToCreate)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
-
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
+	postsToCreate := models.Posts{}
+	body, _ := ioutil.ReadAll(req.Body)
+	postsToCreate.UnmarshalJSON(body)
 
 	createdPosts, err, status := models.CreatePosts(postsToCreate, existingThread)
 	if err != nil {
@@ -118,15 +122,19 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	//newPost := models.Post{}
+	//status, err = ParseRequestIntoStruct(req, &newPost)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
+
 	newPost := models.Post{}
+	body, _ := ioutil.ReadAll(req.Body)
+	newPost.UnmarshalJSON(body)
 
-	status, err = ParseRequestIntoStruct(req, &newPost)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
-
-		//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
 	//fmt.Println("--== existing post ==--")
 	//models.PrintPost(existingPost)
 

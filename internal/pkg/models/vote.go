@@ -6,6 +6,7 @@ import (
 	"tp_db_forum/internal/database"
 )
 
+//easyjson:json
 type Vote struct {
 	Nickname string `json:"nickname"`
 	Voice    int8   `json:"voice"`
