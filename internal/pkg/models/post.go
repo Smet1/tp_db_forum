@@ -43,26 +43,42 @@ func PrintPost(t Post) {
 }
 
 func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, int) {
-	// TODO(): транзакция, по тз не пройдет (при косяке в 1 посте остальные до него заносятся в БД)
 	conn := database.Connection
+	tx, _ := conn.Begin()
+	defer tx.Rollback()
 
 	now := time.Now()
-	var id int64 = 0
-	// get last id
-	res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
-	if err != nil {
-		return []Post{}, errors.Wrap(err, "cant get last id"), http.StatusInternalServerError
-	}
-	for res.Next() {
-		err := res.Scan(&id)
+	//var id int64 = 0
+	//// get last id
+	//res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
+	//if err != nil {
+	//	return []Post{}, errors.Wrap(err, "cant get last id"), http.StatusInternalServerError
+	//}
+	//for res.Next() {
+	//	err := res.Scan(&id)
+	//
+	//	if err != nil {
+	//		return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+	//	}
+	//}
+	//res.Close()
+	//id++
+	//log.Println("\tlast id =", id)
 
-		if err != nil {
-			return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-		}
+	// TODO(): взял у ника, переписать
+	postIdsRows, err := tx.Query(fmt.Sprintf(`SELECT nextval(pg_get_serial_sequence('forum_post', 'id'))
+FROM generate_series(1, %d);`, len(postsToCreate)))
+	if err != nil {
+		return []Post{}, errors.Wrap(err, "cant reserve id's"), http.StatusNotFound
 	}
-	res.Close()
-	id++
-	log.Println("\tlast id =", id)
+	var postIds []int64
+	for postIdsRows.Next() {
+		var availableId int64
+		_ = postIdsRows.Scan(&availableId)
+		postIds = append(postIds, availableId)
+	}
+	postIdsRows.Close()
+	// до сюда
 
 	for i, post := range postsToCreate {
 		fmt.Println("--", i, "--")
@@ -70,6 +86,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 		if post.Parent != 0 {
 			parentPostQuery, err, _ := GetPostByID(post.Parent)
 			if err != nil {
+				log.Println("lel1")
 				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
 			}
 
@@ -80,16 +97,19 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 			fmt.Println("--==                 ==--")
 
 			if parentPostQuery.Thread != existingThread.ID {
+				log.Println("lel2, parentPostQuery.Thread=", parentPostQuery.Thread, "existingThread.ID=", existingThread.ID)
 				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
 			}
 
 			post.Path = parentPostQuery.Path
+			//post.Path = append(post.Path, parentPostQuery.ID)
 		}
 
-		post.Path = append(post.Path, id)
+		post.Path = append(post.Path, postIds[i])
+		//postsToCreate[i].ID = postIds[i]
 
-		resInsert, err := conn.Exec(`INSERT INTO forum_post (author, created, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-			post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID,
+		resInsert, err := tx.Exec(`INSERT INTO forum_post (id, author, created, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+			postIds[i], post.Author, now, existingThread.Forum, post.Message, post.Parent, existingThread.ID,
 			"{"+strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]")+"}")
 
 		fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
@@ -101,15 +121,20 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 		if resInsert.RowsAffected() == 0 {
 			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
 		}
+		//if err != nil {
+		//	return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
+		//}
 
 		postsToCreate[i].Forum = existingThread.Forum
 		postsToCreate[i].Thread = existingThread.ID
 		postsToCreate[i].Created = now
-		postsToCreate[i].ID = id
-		id++
+		postsToCreate[i].ID = postIds[i]
+		//id++
 
 		PrintPost(postsToCreate[i])
 	}
+
+	tx.Commit()
 
 	existingForum, _ := GetForumBySlug(existingThread.Forum)
 	status := UpdateForumStats(existingForum, "post", true, len(postsToCreate))
@@ -159,8 +184,8 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		for _, val := range rootPosts {
 			//sortedPosts = append(sortedPosts, val)
 
-			childPostsQuery, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread" +
-				" FROM forum_post" +
+			childPostsQuery, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread"+
+				" FROM forum_post"+
 				" WHERE path[1] = $1 ORDER BY path", val.ID)
 
 			if err != nil {

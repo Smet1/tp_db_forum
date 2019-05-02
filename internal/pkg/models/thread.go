@@ -76,7 +76,7 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		err := tx.QueryRow(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
 			threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
 			threadToCreate.Title).Scan(&threadToCreate.ID)
-		
+
 		if err == pgx.ErrNoRows {
 			//thread.Get(thread.Slug, 0)
 			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
