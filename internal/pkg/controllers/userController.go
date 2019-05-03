@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -41,13 +42,13 @@ func checkVar(varName string, req *http.Request) (interface{}, error) {
 
 func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("GetUserProfile", req.URL)
+	log.Println("GetUserProfile", req.URL)
 
-	searchingNickname, err := checkVar("nickname", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
-		return
-	}
+	searchingNickname, _ := checkVar("nickname", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
+	//	return
+	//}
 
 	u, err := models.GetUserByNickname(searchingNickname.(string))
 	if err != nil || u.Email == "" {
@@ -60,13 +61,13 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("UpdateUserProfile", req.URL)
+	log.Println("UpdateUserProfile", req.URL)
 
-	nicknameToUpdate, err := checkVar("nickname", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
-		return
-	}
+	nicknameToUpdate, _ := checkVar("nickname", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
+	//	return
+	//}
 
 	//u := models.User{}
 
@@ -83,6 +84,7 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 
 	u := models.User{}
 	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
 	u.UnmarshalJSON(body)
 
 	u.Nickname = nicknameToUpdate.(string)
@@ -98,13 +100,13 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 
 func CreateUser(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("CreateUser", req.URL)
+	log.Println("CreateUser", req.URL)
 
-	nicknameToCreate, err := checkVar("nickname", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
-		return
-	}
+	nicknameToCreate, _ := checkVar("nickname", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
+	//	return
+	//}
 
 	//u, err := models.GetUserByNickname(searchingNickname)
 	//if err == nil && u.Email != "" {
@@ -124,6 +126,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 
 	u := models.User{}
 	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
 	u.UnmarshalJSON(body)
 
 	u.Nickname = nicknameToCreate.(string)
@@ -151,7 +154,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 
 func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("GetForumUsers", req.URL)
+	log.Println("GetForumUsers", req.URL)
 
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
@@ -163,11 +166,11 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	//fmt.Println(since)
 	//fmt.Println(desc)
 
-	searchingSlug, err := checkVar("slug", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())
-		return
-	}
+	searchingSlug, _ := checkVar("slug", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())
+	//	return
+	//}
 
 	//fmt.Println(searchingSlug)
 

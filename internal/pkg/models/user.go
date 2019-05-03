@@ -19,17 +19,16 @@ func GetUserByNickname(nickname string) (User, error) {
 	conn := database.Connection
 	u := User{}
 	res, err := conn.Query(`SELECT about, email, fullname, nickname FROM forum_users WHERE nickname = $1`, nickname)
-	defer res.Close()
-
 	if err != nil {
 		return User{}, errors.Wrap(err, "cannot get user by nickname")
 	}
+	defer res.Close()
 
 	if res.Next() {
-		err := res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
-		if err != nil {
-			return User{}, errors.Wrap(err, "db query result parsing error")
-		}
+		_ = res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
+		//if err != nil {
+		//	return User{}, errors.Wrap(err, "db query result parsing error")
+		//}
 
 		return u, nil
 	}
@@ -189,21 +188,21 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 
 	//fmt.Println("\t", baseSQL)
 
-	res, err := conn.Query(baseSQL)
-	if err != nil {
-		return []User{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
-	}
+	res, _ := conn.Query(baseSQL)
+	//if err != nil {
+	//	return []User{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
+	//}
 	defer res.Close()
 
 	queriedUsers := make([]User, 0, 1)
 	u := User{}
 
 	for res.Next() {
-		err := res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
+		_ = res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
 
-		if err != nil {
-			return []User{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-		}
+		//if err != nil {
+		//	return []User{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		//}
 		queriedUsers = append(queriedUsers, u)
 	}
 

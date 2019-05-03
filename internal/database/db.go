@@ -7,10 +7,10 @@ import (
 var config = pgx.ConnConfig{
 	Host:     "localhost",
 	Port:     5432,
-	//Database: "postgres",
-	Database: "docker",
-	User:     "docker",
-	Password: "docker",
+	Database: "postgres",
+	//Database: "docker",
+	//User:     "docker",
+	//Password: "docker",
 }
 
 var Connection *pgx.ConnPool

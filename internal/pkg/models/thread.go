@@ -160,20 +160,20 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 	}
 
 	//log.Println(baseSQL)
-	res, err := conn.Query(baseSQL)
-	if err != nil {
-		return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
-	}
+	res, _ := conn.Query(baseSQL)
+	//if err != nil {
+	//	return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
+	//}
 	defer res.Close()
 
 	t := Thread{}
 	nullSlug := &pgtype.Varchar{}
 	for res.Next() {
-		err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, nullSlug, &t.Title, &t.Votes)
+		_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, nullSlug, &t.Title, &t.Votes)
 
-		if err != nil {
-			return []Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-		}
+		//if err != nil {
+		//	return []Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		//}
 		t.Slug = nullSlug.String
 
 		queriedThreads = append(queriedThreads, t)
@@ -196,10 +196,10 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 
 		if res.Next() {
 			nullString := pgtype.Text{}
-			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
-			if err != nil {
-				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-			}
+			_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
+			//if err != nil {
+			//	return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			//}
 
 			t.Slug = nullString.String
 
@@ -219,10 +219,10 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 
 		if res.Next() {
 			nullString := pgtype.Text{}
-			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
-			if err != nil {
-				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-			}
+			_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
+			//if err != nil {
+			//	return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			//}
 
 			t.Slug = nullString.String
 
@@ -241,10 +241,10 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 
 		if res.Next() {
 			nullString := pgtype.Text{}
-			err := res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
-			if err != nil {
-				return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-			}
+			_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
+			//if err != nil {
+			//	return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			//}
 
 			t.Slug = nullString.String
 
@@ -257,11 +257,11 @@ func GetThreadByIDorSlug(id int, slug string) (Thread, error, int) {
 
 func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 	conn := database.Connection
-	tx, err := conn.Begin()
+	tx, _ := conn.Begin()
 	defer tx.Rollback()
-	if err != nil {
-		return Thread{}, errors.New("not found"), http.StatusNotFound
-	}
+	//if err != nil {
+	//	return Thread{}, errors.New("not found"), http.StatusNotFound
+	//}
 
 	//fmt.Println("UpdateThreadVote, idLog =", idLog)
 	//fmt.Println(voteValue)
@@ -281,10 +281,10 @@ func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 	//}
 	updatedThread := Thread{}
 	slugNullable := &pgtype.Varchar{}
-	err = tx.QueryRow(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2
+	err := tx.QueryRow(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2
 RETURNING author, created, forum, "message", slug, title, id, votes`,
 		voteValue, threadId).Scan(&updatedThread.Author, &updatedThread.Created, &updatedThread.Forum,
-			&updatedThread.Message, slugNullable, &updatedThread.Title, &updatedThread.ID, &updatedThread.Votes)
+		&updatedThread.Message, slugNullable, &updatedThread.Title, &updatedThread.ID, &updatedThread.Votes)
 	updatedThread.Slug = slugNullable.String
 	if err != nil {
 		return Thread{}, errors.New("not found"), http.StatusNotFound

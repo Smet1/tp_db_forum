@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -23,13 +24,13 @@ func PrintThread(t models.Thread) {
 func CreateThread(res http.ResponseWriter, req *http.Request) {
 	//idLog := rand.Int31n(1000)
 	//log.Println("=============")
-	//log.Println("CreateThread, idLog=", idLog, req.URL)
+	log.Println("CreateThread", req.URL)
 
-	slugName, err := checkVar("slug", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-		return
-	}
+	slugName, _ := checkVar("slug", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+	//	return
+	//}
 
 	//t := models.Thread{}
 	//status, err := ParseRequestIntoStruct(req, &t)
@@ -42,6 +43,7 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 
 	t := models.Thread{}
 	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
 	t.UnmarshalJSON(body)
 
 	t.Forum = slugName.(string)
@@ -87,13 +89,13 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 
 func GetThreads(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("GetThreads", req.URL)
+	log.Println("GetThreads", req.URL)
 
-	slugName, err := checkVar("slug", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-		return
-	}
+	slugName, _ := checkVar("slug", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+	//	return
+	//}
 
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
@@ -126,15 +128,16 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 
 func UpdateThread(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("UpdateThread", req.URL)
+	log.Println("UpdateThread", req.URL)
 
-	slugOrId, err := checkVar("slug_or_id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get slug or id").Error())
-		return
-	}
+	slugOrId, _ := checkVar("slug_or_id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get slug or id").Error())
+	//	return
+	//}
+
 	slug := slugOrId.(string)
-	id, err := strconv.ParseInt(slug, 10, 32)
+	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
 	}
@@ -150,6 +153,7 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 
 	t := models.Thread{}
 	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
 	t.UnmarshalJSON(body)
 
 	//fmt.Println("--== new ==--")

@@ -13,27 +13,27 @@ type Vote struct {
 	Thread   int32  `json:"thread"`
 }
 
-func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int, int8) {
+func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 	conn := database.Connection
 
 	voiceDiff := voteToCreate.Voice
 
-	resInsert, err := conn.Exec(`INSERT INTO forum_vote (nickname, voice, thread) VALUES ($1, $2, $3)`,
+	resInsert, _ := conn.Exec(`INSERT INTO forum_vote (nickname, voice, thread) VALUES ($1, $2, $3)`,
 		voteToCreate.Nickname, voteToCreate.Voice, voteToCreate.Thread)
 
 	if resInsert.RowsAffected() == 0 {
 		//return Thread{}, errors.Wrap(err, "cant create vote"), http.StatusInternalServerError
 		//log.Println(errors.Wrap(err, "cant create vote"), database.Connection.Stat())
 
-		voteBeforeUpdate, err := GetVoteByNicknameAndThreadID(voteToCreate.Nickname, voteToCreate.Thread)
-		if err != nil {
-			return Thread{}, errors.Wrap(err, "Cant find existing vote"), http.StatusInternalServerError, 0
-		}
+		voteBeforeUpdate, _ := GetVoteByNicknameAndThreadID(voteToCreate.Nickname, voteToCreate.Thread)
+		//if err != nil {
+		//	return Thread{}, errors.Wrap(err, "Cant find existing vote"), http.StatusInternalServerError
+		//}
 
-		voteToCreate, err := UpdateVote(voteToCreate.Nickname, voteToCreate.Thread, voteToCreate.Voice)
-		if err != nil {
-			return Thread{}, errors.Wrap(err, "Cant update existing vote"), http.StatusInternalServerError, 0
-		}
+		voteToCreate, _ := UpdateVote(voteToCreate.Nickname, voteToCreate.Thread, voteToCreate.Voice)
+		//if err != nil {
+		//	return Thread{}, errors.Wrap(err, "Cant update existing vote"), http.StatusInternalServerError
+		//}
 
 		// если меняем отзыв, то нужно откатить предыдущий и накатить новый, поэтому ±2
 		//fmt.Println("---=== idLog =", idLog, "check voiceDiff =", voiceDiff, "&& voteToCreate.Voice =", voteToCreate.Voice,
@@ -52,10 +52,10 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int, int8) {
 
 	updatedThread, err, status := UpdateThreadVote(voteToCreate.Thread, voiceDiff)
 	if err != nil {
-		return Thread{}, errors.Wrap(err, "cant update thread"), status, 0
+		return Thread{}, errors.Wrap(err, "cant update thread"), status
 	}
 
-	return updatedThread, nil, http.StatusOK, voiceDiff
+	return updatedThread, nil, http.StatusOK
 }
 
 func GetVoteByNicknameAndThreadID(nickname string, threadID int32) (Vote, error) {

@@ -192,10 +192,10 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		//fmt.Println("\tbaseSQL =", baseSQL)
 
 	case "parent_tree":
-		rootPosts, err := ParentTreeSort(parentThread, limit, since, sort, desc)
-		if err != nil {
-			return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
-		}
+		rootPosts, _ := ParentTreeSort(parentThread, limit, since, sort, desc)
+		//if err != nil {
+		//	return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
+		//}
 
 		if len(rootPosts) == 0 {
 			//log.Println("parent tree: no posts found")
@@ -206,26 +206,26 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		for _, val := range rootPosts {
 			//sortedPosts = append(sortedPosts, val)
 
-			childPostsQuery, err := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread"+
+			childPostsQuery, _ := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread"+
 				" FROM forum_post"+
 				" WHERE path[1] = $1 ORDER BY path", val.ID)
 
-			if err != nil {
-				childPostsQuery.Close()
-
-				return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-			}
+			//if err != nil {
+			//	childPostsQuery.Close()
+			//
+			//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+			//}
 
 			post := Post{}
 
 			for childPostsQuery.Next() {
-				err := childPostsQuery.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+				_ = childPostsQuery.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
 
-				if err != nil {
-					childPostsQuery.Close()
-
-					return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-				}
+				//if err != nil {
+				//	childPostsQuery.Close()
+				//
+				//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+				//}
 				sortedPosts = append(sortedPosts, post)
 			}
 
@@ -235,21 +235,20 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		return sortedPosts, nil, http.StatusOK
 	}
 
-	res, err := conn.Query(baseSQL)
+	res, _ := conn.Query(baseSQL)
+	//}
+	//	return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
+	//if err != nil {
 	defer res.Close()
-
-	if err != nil {
-		return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
-	}
 
 	post := Post{}
 
 	for res.Next() {
-		err := res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+		_ = res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
 
-		if err != nil {
-			return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-		}
+		//if err != nil {
+		//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		//}
 		sortedPosts = append(sortedPosts, post)
 	}
 
@@ -398,11 +397,11 @@ func GetPostByID(id int64) (Post, error, int) {
 
 	for res.Next() {
 		//path := []pgtype.ArrayDimension{}
-		err := res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread, pq.Array(&post.Path))
+		_ = res.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread, pq.Array(&post.Path))
 
-		if err != nil {
-			return Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-		}
+		//if err != nil {
+		//	return Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		//}
 
 		//fmt.Println("GetPostByID::path = ", post.Path)
 

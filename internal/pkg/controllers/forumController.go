@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("CreateForum", req.URL)
+	log.Println("CreateForum", req.URL)
 
 	//f := models.Forum{}
 	//status, err := ParseRequestIntoStruct(req, &f)
@@ -22,6 +22,7 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 
 	f := models.Forum{}
 	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
 	f.UnmarshalJSON(body)
 
 	createdForum, err := models.CreateForum(f)
@@ -49,13 +50,13 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("GetForum", req.URL)
+	log.Println("GetForum", req.URL)
 
-	searchingSlug, err := checkVar("slug", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())
-		return
-	}
+	searchingSlug, _ := checkVar("slug", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())
+	//	return
+	//}
 
 	f, err := models.GetForumBySlug(searchingSlug.(string))
 	if err != nil || f.User == "" {

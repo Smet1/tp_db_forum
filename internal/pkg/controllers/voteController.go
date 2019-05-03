@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -11,17 +12,17 @@ import (
 func CreateVote(res http.ResponseWriter, req *http.Request) {
 	//idLog := rand.Int31n(1000)
 	//log.Println("=============")
-	//log.Println("CreateVote idLog=", idLog, req.URL)
+	log.Println("CreateVote", req.URL)
 
-	slugOrId, err := checkVar("slug_or_id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-
-		//log.Println("CreateVote", err)
-		return
-	}
+	slugOrId, _ := checkVar("slug_or_id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+	//
+	//	//log.Println("CreateVote", err)
+	//	return
+	//}
 	slug := slugOrId.(string)
-	id, err := strconv.ParseInt(slug, 10, 32)
+	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
 	}
@@ -45,6 +46,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 
 	voteToCreate := models.Vote{}
 	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
 	voteToCreate.UnmarshalJSON(body)
 
 	existingUser, err := models.GetUserByNickname(voteToCreate.Nickname)
@@ -57,7 +59,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	voteToCreate.Thread = existingThread.ID
 	voteToCreate.Nickname = existingUser.Nickname
 
-	updatedThread, err, status, _ := models.CreateVoteAndUpdateThread(voteToCreate)
+	updatedThread, err, status := models.CreateVoteAndUpdateThread(voteToCreate)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
@@ -82,15 +84,15 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 
 func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	//log.Println("GetThreadDetails", req.URL)
+	log.Println("GetThreadDetails", req.URL)
 
-	slugOrId, err := checkVar("slug_or_id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-		return
-	}
+	slugOrId, _ := checkVar("slug_or_id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+	//	return
+	//}
 	slug := slugOrId.(string)
-	id, err := strconv.ParseInt(slug, 10, 32)
+	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
 	}
