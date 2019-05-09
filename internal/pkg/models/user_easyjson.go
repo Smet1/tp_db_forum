@@ -58,7 +58,7 @@ func easyjson9e1087fdEncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Us
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.About != "" {
 		const prefix string = ",\"about\":"
 		if first {
 			first = false
@@ -88,7 +88,7 @@ func easyjson9e1087fdEncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Us
 		}
 		out.String(string(in.Fullname))
 	}
-	{
+	if in.Nickname != "" {
 		const prefix string = ",\"nickname\":"
 		if first {
 			first = false

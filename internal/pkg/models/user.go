@@ -9,10 +9,10 @@ import (
 
 //easyjson:json
 type User struct {
-	About    string `json:"about"`
+	About    string `json:"about,omitempty"`
 	Email    string `json:"email"`
 	Fullname string `json:"fullname"`
-	Nickname string `json:"nickname"`
+	Nickname string `json:"nickname,omitempty"`
 }
 
 func GetUserByNickname(nickname string) (User, error) {
@@ -203,7 +203,6 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 	if limit != 0 {
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
 	}
-
 
 	//fmt.Println("\t", baseSQL)
 

@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/jackc/pgx/pgtype"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	"net/http"
@@ -293,7 +294,7 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 			baseSQL += " ORDER BY path"
 		}
 
-		fmt.Println(baseSQL)
+		//fmt.Println(baseSQL)
 	}
 
 	res, _ := conn.Query(baseSQL)
@@ -513,14 +514,15 @@ func GetPostDetails(existingPost Post, related []string) (PostFull, error, int) 
 			//defer res.Close()
 
 			t := Thread{}
+			nullString := pgtype.Varchar{}
 
 			for res.Next() {
-				_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &t.Slug, &t.Title, &t.Votes)
+				_ = res.Scan(&t.Author, &t.Created, &t.Forum, &t.ID, &t.Message, &nullString, &t.Title, &t.Votes)
 			}
+			t.Slug = nullString.String
 
 			postFull.Thread = &t
 			res.Close()
-
 		}
 	}
 

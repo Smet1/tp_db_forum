@@ -78,7 +78,7 @@ func easyjson2d00218EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Thr
 		}
 		out.String(string(in.Author))
 	}
-	{
+	if true {
 		const prefix string = ",\"created\":"
 		if first {
 			first = false
@@ -88,7 +88,7 @@ func easyjson2d00218EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Thr
 		}
 		out.Raw((in.Created).MarshalJSON())
 	}
-	{
+	if in.Forum != "" {
 		const prefix string = ",\"forum\":"
 		if first {
 			first = false
@@ -98,7 +98,7 @@ func easyjson2d00218EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Thr
 		}
 		out.String(string(in.Forum))
 	}
-	{
+	if in.ID != 0 {
 		const prefix string = ",\"id\":"
 		if first {
 			first = false
@@ -118,7 +118,7 @@ func easyjson2d00218EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Thr
 		}
 		out.String(string(in.Message))
 	}
-	{
+	if in.Slug != "" {
 		const prefix string = ",\"slug\":"
 		if first {
 			first = false
@@ -138,7 +138,7 @@ func easyjson2d00218EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Thr
 		}
 		out.String(string(in.Title))
 	}
-	{
+	if in.Votes != 0 {
 		const prefix string = ",\"votes\":"
 		if first {
 			first = false

@@ -60,7 +60,7 @@ func easyjsonC8d74561EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Fo
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Posts != 0 {
 		const prefix string = ",\"posts\":"
 		if first {
 			first = false
@@ -80,7 +80,7 @@ func easyjsonC8d74561EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Fo
 		}
 		out.String(string(in.Slug))
 	}
-	{
+	if in.Threads != 0 {
 		const prefix string = ",\"threads\":"
 		if first {
 			first = false
