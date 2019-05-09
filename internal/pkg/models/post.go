@@ -288,9 +288,9 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		baseSQL += " LIMIT " + strconv.Itoa(limit) + ")"
 
 		if desc {
-			baseSQL += " ORDER BY id DESC, path, created DESC"
+			baseSQL += " ORDER BY path[1] DESC, path, id"
 		} else {
-			baseSQL += " ORDER BY id, path, created"
+			baseSQL += " ORDER BY path"
 		}
 
 		fmt.Println(baseSQL)
