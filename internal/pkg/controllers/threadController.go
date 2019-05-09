@@ -44,7 +44,7 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 	t := models.Thread{}
 	body, _ := ioutil.ReadAll(req.Body)
 	defer req.Body.Close()
-	t.UnmarshalJSON(body)
+	_ = t.UnmarshalJSON(body)
 
 	t.Forum = slugName.(string)
 	//fmt.Println("\tGET")

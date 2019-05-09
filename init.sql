@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS forum_vote CASCADE;
 
 CREATE TABLE IF NOT EXISTS forum_users
 (
-    id       SERIAL PRIMARY KEY,
+--     id       SERIAL PRIMARY KEY,
     nickname CITEXT NOT NULL UNIQUE,
     fullname TEXT,
     email    CITEXT NOT NULL UNIQUE,
@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS forum_thread
 -- GetForumBySlug
 CREATE INDEX IF not exists forum_thread_slug ON forum_thread (slug);
 -- GetForumThreads
-CREATE INDEX IF NOT EXISTS forum_thread_created ON forum_thread (created);
+-- CREATE INDEX IF NOT EXISTS forum_thread_created ON forum_thread (created);
+CREATE INDEX IF NOT EXISTS forum_thread_forum_created ON forum_thread (forum, created);
 -- GetForumUsers (но хз)
 CREATE INDEX IF not exists forum_thread_author_forum ON forum_thread (author, forum);
 
@@ -96,3 +97,10 @@ CREATE TABLE IF NOT EXISTS forum_vote
 
 -- GetVoteByNicknameAndThreadID
 CREATE INDEX IF not exists forum_vote_nickname_thread ON forum_vote (nickname, thread);
+
+CREATE TABLE IF NOT EXISTS forum_users_forum
+(
+    nickname citext REFERENCES forum_users (nickname) NOT NULL,
+    slug  citext REFERENCES forum_forum (slug)  NOT NULL,
+    UNIQUE (nickname, slug)
+);

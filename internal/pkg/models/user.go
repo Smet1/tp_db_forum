@@ -40,11 +40,10 @@ func GetUserByEmail(email string) (User, error) {
 	conn := database.Connection
 	u := User{}
 	res, err := conn.Query(`SELECT about, email, fullname, nickname FROM forum_users WHERE email = $1`, email)
-	defer res.Close()
-
 	if err != nil {
 		return User{}, errors.Wrap(err, "cannot get user by nickname")
 	}
+	defer res.Close()
 
 	if res.Next() {
 		err := res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
@@ -62,11 +61,10 @@ func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
 	u := User{}
 	res, err := conn.Query(`SELECT about, email, fullname, nickname FROM forum_users WHERE email = $1 OR nickname = $2`,
 		email, nickname)
-	defer res.Close()
-
 	if err != nil {
 		return []User{}, errors.Wrap(err, "cannot get user by nickname or email")
 	}
+	defer res.Close()
 
 	for res.Next() {
 		err := res.Scan(&u.About, &u.Email, &u.Fullname, &u.Nickname)
@@ -89,7 +87,7 @@ func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
 func CreateUser(userToCreate User) (User, error) {
 	conn := database.Connection
 
-	res, err := conn.Exec(`Insert Into forum_users (nickname, fullname, email, about) VALUES ($1, $2, $3, $4)`,
+	res, err := conn.Exec(`INSERT INTO forum_users (nickname, fullname, email, about) VALUES ($1, $2, $3, $4)`,
 		userToCreate.Nickname, userToCreate.Fullname, userToCreate.Email, userToCreate.About)
 	if err != nil {
 		return User{}, errors.Wrap(err, "cannot create user")
@@ -160,21 +158,41 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 	//ORDER BY nickname
 	//LIMIT 4;
 
-	baseSQL := `SELECT DISTINCT about, email, fullname, nickname FROM forum_users`
+	//baseSQL := `SELECT DISTINCT about, email, fullname, nickname FROM forum_users`
+	//if since != "" {
+	//	if desc {
+	//		baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname` + " AND nickname < '" + since + "'"
+	//		baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname` + " AND nickname < '" + since + "'"
+	//	} else {
+	//		baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname` + " AND nickname > '" + since + "'"
+	//		baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname` + " AND nickname > '" + since + "'"
+	//
+	//	}
+	//} else {
+	//	baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname`
+	//	baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname`
+	//}
+	//baseSQL += ` WHERE fp.forum = '` + existingForum.Slug + `' OR ft.forum = '` + existingForum.Slug + `'`
+	//
+	//if desc {
+	//	baseSQL += " ORDER BY nickname DESC"
+	//} else {
+	//	baseSQL += " ORDER BY nickname ASC"
+	//}
+	//
+	//if limit != 0 {
+	//	baseSQL += " LIMIT " + strconv.Itoa(limit)
+	//}
+	baseSQL := `SELECT about, email, fullname, fu.nickname FROM forum_users_forum JOIN forum_users fu ON fu.nickname = forum_users_forum.nickname`
+
+	baseSQL += ` where slug = '` + existingForum.Slug + `'`
 	if since != "" {
 		if desc {
-			baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname` + " AND nickname < '" + since + "'"
-			baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname` + " AND nickname < '" + since + "'"
+			baseSQL += ` AND fu.nickname < '` + since + `'`
 		} else {
-			baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname` + " AND nickname > '" + since + "'"
-			baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname` + " AND nickname > '" + since + "'"
-
+			baseSQL += ` AND fu.nickname > '` + since + `'`
 		}
-	} else {
-		baseSQL += ` LEFT JOIN forum_post fp ON fp.author = nickname`
-		baseSQL += ` LEFT JOIN forum_thread ft ON ft.author = nickname`
 	}
-	baseSQL += ` WHERE fp.forum = '` + existingForum.Slug + `' OR ft.forum = '` + existingForum.Slug + `'`
 
 	if desc {
 		baseSQL += " ORDER BY nickname DESC"
@@ -185,6 +203,7 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 	if limit != 0 {
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
 	}
+
 
 	//fmt.Println("\t", baseSQL)
 
@@ -208,4 +227,13 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 
 	return queriedUsers, nil, http.StatusOK
 
+}
+
+func AddUser(nickname string, forumSlug string) {
+	conn := database.Connection
+
+	_, _ = conn.Exec(`INSERT INTO forum_users_forum (nickname, slug) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+		nickname, forumSlug)
+
+	return
 }

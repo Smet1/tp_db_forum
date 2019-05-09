@@ -127,7 +127,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	u := models.User{}
 	body, _ := ioutil.ReadAll(req.Body)
 	defer req.Body.Close()
-	u.UnmarshalJSON(body)
+	_ = u.UnmarshalJSON(body)
 
 	u.Nickname = nicknameToCreate.(string)
 	//existingUser, err := models.GetUserByEmail(u.Email)

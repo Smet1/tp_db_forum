@@ -124,6 +124,8 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		return Thread{}, errors.New("cant update forum stats"), status
 	}
 
+	AddUser(threadToCreate.Author, existingForum.Slug)
+
 	return threadToCreate, nil, http.StatusOK
 }
 

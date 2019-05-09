@@ -69,6 +69,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	//id++
 	//log.Println("\tlast id =", id)
 	mapParents := make(map[int64]Post)
+	mapUsers := make(map[string]string)
 	for _, post := range postsToCreate {
 		if _, ok := mapParents[post.Parent]; !ok && post.Parent != 0 {
 			parentPostQuery, err, _ := GetPostByID(post.Parent)
@@ -83,6 +84,10 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 			}
 
 			mapParents[post.Parent] = parentPostQuery
+		}
+
+		if _, ok := mapUsers[post.Author]; !ok {
+			mapUsers[post.Author] = post.Author
 		}
 	}
 
@@ -99,7 +104,7 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 		postIds = append(postIds, availableId)
 	}
 	postIdsRows.Close()
-	// до сюда
+	// TODO(): до сюда
 
 	for i, post := range postsToCreate {
 		//fmt.Println("--", i, "--")
@@ -163,6 +168,12 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 	if status != http.StatusOK {
 		return []Post{}, errors.New("cant update forum stats"), status
 	}
+
+	go func() {
+		for _, val := range mapUsers {
+			AddUser(val, existingThread.Forum)
+		}
+	}()
 
 	return postsToCreate, nil, http.StatusOK
 }

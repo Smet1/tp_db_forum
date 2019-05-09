@@ -45,7 +45,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	postsToCreate := models.Posts{}
 	body, _ := ioutil.ReadAll(req.Body)
 	defer req.Body.Close()
-	postsToCreate.UnmarshalJSON(body)
+	_ = postsToCreate.UnmarshalJSON(body)
 
 	createdPosts, err, status := models.CreatePosts(postsToCreate, existingThread)
 	if err != nil {

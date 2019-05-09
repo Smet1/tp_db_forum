@@ -19,7 +19,7 @@ func GetDBCountData() (Status, error, int) {
 	res, _ := conn.Query("SELECT * FROM (SELECT count(posts) FROM forum_forum) as ff" +
 		" CROSS JOIN (SELECT count(id) FROM forum_post) as fp" +
 		" CROSS JOIN (SELECT count(id) FROM forum_thread) as ft" +
-		" CROSS JOIN (SELECT count(id) FROM forum_users) as fu")
+		" CROSS JOIN (SELECT count(nickname) FROM forum_users) as fu")
 	defer res.Close()
 
 	//if err != nil {

@@ -23,7 +23,7 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 	f := models.Forum{}
 	body, _ := ioutil.ReadAll(req.Body)
 	defer req.Body.Close()
-	f.UnmarshalJSON(body)
+	_ = f.UnmarshalJSON(body)
 
 	createdForum, err := models.CreateForum(f)
 	if err != nil {

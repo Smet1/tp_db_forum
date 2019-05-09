@@ -26,11 +26,13 @@ func CreateForum(forumToCreate Forum) (Forum, error) {
 
 	forumToCreate.User = existingUser.Nickname
 
-	_, err = conn.Exec(`Insert Into forum_forum (posts, slug, threads, title, "user") VALUES ($1, $2, $3, $4, $5)`,
+	_, err = conn.Exec(`INSERT INTO forum_forum (posts, slug, threads, title, "user") VALUES ($1, $2, $3, $4, $5)`,
 		forumToCreate.Posts, forumToCreate.Slug, forumToCreate.Threads, forumToCreate.Title, forumToCreate.User)
 	if err != nil {
 		return Forum{}, errors.Wrap(err, "cannot create forum")
 	}
+
+	//AddUser(forumToCreate.User, forumToCreate.Slug)
 
 	return forumToCreate, nil
 }
@@ -38,10 +40,10 @@ func CreateForum(forumToCreate Forum) (Forum, error) {
 func GetForumBySlug(slug string) (Forum, error) {
 	conn := database.Connection
 	res, err := conn.Query(`SELECT * FROM forum_forum WHERE slug = $1`, slug)
-	defer res.Close()
 	if err != nil {
 		return Forum{}, errors.Wrap(err, "cannot get forum by slug")
 	}
+	defer res.Close()
 
 	f := Forum{}
 
