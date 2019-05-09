@@ -2,14 +2,13 @@ package controllers
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("CreateForum", req.URL)
+	//log.Println("CreateForum", req.URL)
 
 	//f := models.Forum{}
 	//status, err := ParseRequestIntoStruct(req, &f)
@@ -50,7 +49,7 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetForum", req.URL)
+	//log.Println("GetForum", req.URL)
 
 	searchingSlug, _ := checkVar("slug", req)
 	//if err != nil {

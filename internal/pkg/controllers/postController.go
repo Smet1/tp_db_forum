@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,7 +11,7 @@ import (
 
 func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("CreatePosts", req.URL)
+	//log.Println("CreatePosts", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
 	//if err != nil {
@@ -60,7 +59,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 
 func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetThreadPosts", req.URL)
+	//log.Println("GetThreadPosts", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
 	//if err != nil {
@@ -105,7 +104,7 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 
 func UpdatePost(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("UpdatePost", req.URL)
+	//log.Println("UpdatePost", req.URL)
 
 	postId, _ := checkVar("id", req)
 	//if err != nil {
@@ -160,7 +159,7 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 
 func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetPostInfo", req.URL)
+	//log.Println("GetPostInfo", req.URL)
 
 	slug, _ := checkVar("id", req)
 	//if err != nil {

@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -12,7 +11,7 @@ import (
 func CreateVote(res http.ResponseWriter, req *http.Request) {
 	//idLog := rand.Int31n(1000)
 	//log.Println("=============")
-	log.Println("CreateVote", req.URL)
+	//log.Println("CreateVote", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
 	//if err != nil {
@@ -84,7 +83,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 
 func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetThreadDetails", req.URL)
+	//log.Println("GetThreadDetails", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
 	//if err != nil {

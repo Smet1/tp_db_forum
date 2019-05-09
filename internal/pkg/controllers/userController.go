@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -42,7 +41,7 @@ func checkVar(varName string, req *http.Request) (interface{}, error) {
 
 func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetUserProfile", req.URL)
+	//log.Println("GetUserProfile", req.URL)
 
 	searchingNickname, _ := checkVar("nickname", req)
 	//if err != nil {
@@ -61,7 +60,7 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("UpdateUserProfile", req.URL)
+	//log.Println("UpdateUserProfile", req.URL)
 
 	nicknameToUpdate, _ := checkVar("nickname", req)
 	//if err != nil {
@@ -100,7 +99,7 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 
 func CreateUser(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("CreateUser", req.URL)
+	//log.Println("CreateUser", req.URL)
 
 	nicknameToCreate, _ := checkVar("nickname", req)
 	//if err != nil {
@@ -154,7 +153,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 
 func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetForumUsers", req.URL)
+	//log.Println("GetForumUsers", req.URL)
 
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"tp_db_forum/internal/pkg/models"
@@ -24,7 +23,7 @@ func PrintThread(t models.Thread) {
 func CreateThread(res http.ResponseWriter, req *http.Request) {
 	//idLog := rand.Int31n(1000)
 	//log.Println("=============")
-	log.Println("CreateThread", req.URL)
+	//log.Println("CreateThread", req.URL)
 
 	slugName, _ := checkVar("slug", req)
 	//if err != nil {
@@ -89,7 +88,7 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 
 func GetThreads(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetThreads", req.URL)
+	//log.Println("GetThreads", req.URL)
 
 	slugName, _ := checkVar("slug", req)
 	//if err != nil {
@@ -128,7 +127,7 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 
 func UpdateThread(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("UpdateThread", req.URL)
+	//log.Println("UpdateThread", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
 	//if err != nil {
