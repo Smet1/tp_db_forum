@@ -83,6 +83,8 @@ CREATE TABLE IF NOT EXISTS forum_post
 CREATE INDEX IF not exists forum_post_thread_id ON forum_post (thread, id);
 -- -- TreeSort, ParentTreeSort
 CREATE INDEX IF not exists forum_post_thread_path_id ON forum_post (thread, path, id);
+CREATE INDEX IF NOT EXISTS forum_post_thread_id_path_parent ON forum_post (thread, id, path, parent);
+
 -- GetForumUsers (хз)
 CREATE INDEX IF not exists forum_post_author_forum ON forum_post (author, forum);
 

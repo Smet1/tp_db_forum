@@ -203,47 +203,97 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 		//fmt.Println("\tbaseSQL =", baseSQL)
 
 	case "parent_tree":
-		rootPosts, _ := ParentTreeSort(parentThread, limit, since, sort, desc)
-		//if err != nil {
-		//	return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
+		//rootPosts, _ := ParentTreeSort(parentThread, limit, since, sort, desc)
+		////if err != nil {
+		////	return []Post{}, errors.Wrap(err, "cannot get posts"), http.StatusInternalServerError
+		////}
+		//
+		//if len(rootPosts) == 0 {
+		//	//log.Println("parent tree: no posts found")
+		//
+		//	return []Post{}, nil, http.StatusOK
 		//}
+		//
+		//for _, val := range rootPosts {
+		//	//sortedPosts = append(sortedPosts, val)
+		//
+		//	childPostsQuery, _ := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread"+
+		//		" FROM forum_post"+
+		//		" WHERE path[1] = $1 ORDER BY path", val.ID)
+		//
+		//	fmt.Println("SELECT author, created, forum, id, isedited, message, parent, thread"+
+		//	" FROM forum_post"+
+		//		" WHERE path[1] = $1 ORDER BY path", val.ID)
+		//
+		//	//if err != nil {
+		//	//	childPostsQuery.Close()
+		//	//
+		//	//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		//	//}
+		//
+		//	post := Post{}
+		//
+		//	for childPostsQuery.Next() {
+		//		_ = childPostsQuery.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
+		//
+		//		//if err != nil {
+		//		//	childPostsQuery.Close()
+		//		//
+		//		//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
+		//		//}
+		//		sortedPosts = append(sortedPosts, post)
+		//	}
+		//
+		//	childPostsQuery.Close()
+		//}
+		//
+		//return sortedPosts, nil, http.StatusOK
 
-		if len(rootPosts) == 0 {
-			//log.Println("parent tree: no posts found")
+		//SELECT author,
+		//                       created,
+		//                       forum,
+		//                       id,
+		//                       isedited,
+		//                       message,
+		//                       parent,
+		//                       thread
+		//                FROM forum_post
+		//                WHERE path[1] IN (SELECT id
+		//                                  FROM forum_post fp
+		//                                  WHERE thread = 19005
+		//                                    AND parent = 0
+		//                                    AND path[1] < (SELECT path[1] FROM forum_post WHERE id = 2371687)
+		//                                  ORDER BY id DESC
+		//                                  LIMIT 15)
+		//                ORDER BY id DESC, path, created DESC;
 
-			return []Post{}, nil, http.StatusOK
-		}
+		baseSQL = "SELECT author, created, forum, id, isedited, message, parent, thread FROM forum_post WHERE path[1]" +
+			" IN (SELECT id FROM forum_post WHERE thread = " + strconv.FormatInt(int64(parentThread.ID), 10) +
+			" AND parent = 0"
 
-		for _, val := range rootPosts {
-			//sortedPosts = append(sortedPosts, val)
-
-			childPostsQuery, _ := conn.Query("SELECT author, created, forum, id, isedited, message, parent, thread"+
-				" FROM forum_post"+
-				" WHERE path[1] = $1 ORDER BY path", val.ID)
-
-			//if err != nil {
-			//	childPostsQuery.Close()
-			//
-			//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-			//}
-
-			post := Post{}
-
-			for childPostsQuery.Next() {
-				_ = childPostsQuery.Scan(&post.Author, &post.Created, &post.Forum, &post.ID, &post.IsEdited, &post.Message, &post.Parent, &post.Thread)
-
-				//if err != nil {
-				//	childPostsQuery.Close()
-				//
-				//	return []Post{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-				//}
-				sortedPosts = append(sortedPosts, post)
+		if since != 0 {
+			if desc {
+				baseSQL += " AND path[1] < (SELECT path[1] FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
+			} else {
+				baseSQL += " AND path[1] > (SELECT path[1] FROM forum_post WHERE id = " + strconv.Itoa(since) + ")"
 			}
-
-			childPostsQuery.Close()
 		}
 
-		return sortedPosts, nil, http.StatusOK
+		if desc {
+			baseSQL += " ORDER BY id DESC"
+		} else {
+			baseSQL += " ORDER BY id"
+		}
+
+		baseSQL += " LIMIT " + strconv.Itoa(limit) + ")"
+
+		if desc {
+			baseSQL += " ORDER BY id DESC, path, created DESC"
+		} else {
+			baseSQL += " ORDER BY id, path, created"
+		}
+
+		fmt.Println(baseSQL)
 	}
 
 	res, _ := conn.Query(baseSQL)
@@ -346,8 +396,8 @@ func ParentTreeSort(parentThread Thread, limit int, since int, sort string, desc
 
 	baseSQL += " LIMIT " + strconv.Itoa(limit)
 
-	//fmt.Println("---===parent_tree sort===---")
-	//fmt.Println("\tbaseSQL =", baseSQL)
+	fmt.Println("---===parent_tree sort===---")
+	fmt.Println("\tbaseSQL =", baseSQL)
 
 	rootPostsRaw, err := conn.Query(baseSQL)
 	if err != nil {
