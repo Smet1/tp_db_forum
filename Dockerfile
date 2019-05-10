@@ -98,6 +98,6 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 USER root
 # Запускаем PostgreSQL и сервер
 #
-#RUN go mod vendor
+RUN go mod vendor
 RUN go build -mod=vendor /server/cmd/server/main.go
 CMD service postgresql start && ./main

@@ -4,7 +4,6 @@ import (
 	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -64,7 +63,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 
 func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetThreadPosts", req.URL)
+	//log.Println("GetThreadPosts", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
 	//if err != nil {
