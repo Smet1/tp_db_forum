@@ -1,12 +1,12 @@
 package controllers
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"tp_db_forum/internal/pkg/models"
 )
 
 //func ParseRequestIntoStruct(req *http.Request, requestStruct interface{}) (int, error) {

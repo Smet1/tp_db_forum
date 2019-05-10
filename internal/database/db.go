@@ -5,8 +5,8 @@ import (
 )
 
 var config = pgx.ConnConfig{
-	Host:     "localhost",
-	Port:     5432,
+	Host: "localhost",
+	Port: 5432,
 	//Database: "postgres",
 	Database: "docker",
 	User:     "docker",

@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateVote(res http.ResponseWriter, req *http.Request) {

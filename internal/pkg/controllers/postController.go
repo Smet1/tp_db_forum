@@ -1,13 +1,13 @@
 package controllers
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"tp_db_forum/internal/pkg/models"
 )
 
 func CreatePosts(res http.ResponseWriter, req *http.Request) {

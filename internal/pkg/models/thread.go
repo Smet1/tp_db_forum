@@ -1,13 +1,13 @@
 package models
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/database"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
 	"time"
-	"tp_db_forum/internal/database"
 )
 
 //easyjson:json

@@ -1,9 +1,9 @@
 package models
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/database"
 	"github.com/pkg/errors"
 	"net/http"
-	"tp_db_forum/internal/database"
 )
 
 //easyjson:json

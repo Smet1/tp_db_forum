@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"net/http"
-	"tp_db_forum/internal/pkg/models"
 )
 
 func GetDBStatus(res http.ResponseWriter, req *http.Request) {

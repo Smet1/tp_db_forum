@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/Smet1/tp_db_forum/internal/database"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -10,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"tp_db_forum/internal/database"
 )
 
 //easyjson:json

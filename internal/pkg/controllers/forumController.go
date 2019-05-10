@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"io/ioutil"
 	"net/http"
-	"tp_db_forum/internal/pkg/models"
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {

@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"tp_db_forum/internal/pkg/models"
 )
 
 func PrintThread(t models.Thread) {
