@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson9e1087fdDecodeTpDbForumInternalPkgModels(in *jlexer.Lexer, out *User) {
+func easyjsonE3ecfa40DecodeTpDbForumInternalPkgModels(in *jlexer.Lexer, out *Vote) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -36,14 +36,12 @@ func easyjson9e1087fdDecodeTpDbForumInternalPkgModels(in *jlexer.Lexer, out *Use
 			continue
 		}
 		switch key {
-		case "about":
-			out.About = string(in.String())
-		case "email":
-			out.Email = string(in.String())
-		case "fullname":
-			out.Fullname = string(in.String())
 		case "nickname":
 			out.Nickname = string(in.String())
+		case "voice":
+			out.Voice = int8(in.Int8())
+		case "thread":
+			out.Thread = int32(in.Int32())
 		default:
 			in.SkipRecursive()
 		}
@@ -54,41 +52,11 @@ func easyjson9e1087fdDecodeTpDbForumInternalPkgModels(in *jlexer.Lexer, out *Use
 		in.Consumed()
 	}
 }
-func easyjson9e1087fdEncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in User) {
+func easyjsonE3ecfa40EncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Vote) {
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.About != "" {
-		const prefix string = ",\"about\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.About))
-	}
 	{
-		const prefix string = ",\"email\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Email))
-	}
-	{
-		const prefix string = ",\"fullname\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Fullname))
-	}
-	if in.Nickname != "" {
 		const prefix string = ",\"nickname\":"
 		if first {
 			first = false
@@ -98,29 +66,49 @@ func easyjson9e1087fdEncodeTpDbForumInternalPkgModels(out *jwriter.Writer, in Us
 		}
 		out.String(string(in.Nickname))
 	}
+	{
+		const prefix string = ",\"voice\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int8(int8(in.Voice))
+	}
+	{
+		const prefix string = ",\"thread\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int32(int32(in.Thread))
+	}
 	out.RawByte('}')
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v User) MarshalJSON() ([]byte, error) {
+func (v Vote) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson9e1087fdEncodeTpDbForumInternalPkgModels(&w, v)
+	easyjsonE3ecfa40EncodeTpDbForumInternalPkgModels(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v User) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson9e1087fdEncodeTpDbForumInternalPkgModels(w, v)
+func (v Vote) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjsonE3ecfa40EncodeTpDbForumInternalPkgModels(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *User) UnmarshalJSON(data []byte) error {
+func (v *Vote) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson9e1087fdDecodeTpDbForumInternalPkgModels(&r, v)
+	easyjsonE3ecfa40DecodeTpDbForumInternalPkgModels(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *User) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson9e1087fdDecodeTpDbForumInternalPkgModels(l, v)
+func (v *Vote) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjsonE3ecfa40DecodeTpDbForumInternalPkgModels(l, v)
 }

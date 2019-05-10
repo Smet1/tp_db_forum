@@ -1,26 +1,25 @@
 package controllers
 
 import (
-	"fmt"
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"github.com/pkg/errors"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
-	"tp_db_forum/internal/pkg/models"
 )
 
 func CreatePosts(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("CreatePosts", req.URL)
+	//log.Println("=============")
+	//log.Println("CreatePosts", req.URL)
 
-	slugOrId, err := checkVar("slug_or_id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-		return
-	}
+	slugOrId, _ := checkVar("slug_or_id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+	//	return
+	//}
 	slug := slugOrId.(string)
-	id, err := strconv.ParseInt(slug, 10, 32)
+	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
 	}
@@ -31,15 +30,23 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(existingThread)
+	//fmt.Println(existingThread)
 
-	postsToCreate := make([]models.Post, 0, 1)
+	//postsToCreate := make([]models.Post, 0, 1)
+	//status, err = ParseRequestIntoStruct(req, &postsToCreate)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
 
-	status, err = ParseRequestIntoStruct(req, &postsToCreate)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
-
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	postsToCreate := models.Posts{}
+	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
+	_ = postsToCreate.UnmarshalJSON(body)
+	if len(postsToCreate) == 0 {
+		ResponseObject(res, http.StatusCreated, postsToCreate)
 		return
 	}
 
@@ -47,7 +54,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
-		log.Println("\t", errors.Wrap(err, "models.CreatePost error"))
+		//log.Println("\t", errors.Wrap(err, "models.CreatePost error"))
 		return
 	}
 
@@ -55,14 +62,14 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetThreadPosts", req.URL)
+	//log.Println("=============")
+	//log.Println("GetThreadPosts", req.URL)
 
-	slugOrId, err := checkVar("slug_or_id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-		return
-	}
+	slugOrId, _ := checkVar("slug_or_id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
+	//	return
+	//}
 	slug := slugOrId.(string)
 	id, err := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
@@ -75,7 +82,7 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	fmt.Println(existingThread)
+	//fmt.Println(existingThread)
 
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
@@ -83,11 +90,11 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	sort := query.Get("sort")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	fmt.Println("query =", query)
-	fmt.Println("limit =", limit)
-	fmt.Println("since =", since)
-	fmt.Println("sort =", sort)
-	fmt.Println("desc =", desc)
+	//fmt.Println("query =", query)
+	//fmt.Println("limit =", limit)
+	//fmt.Println("since =", since)
+	//fmt.Println("sort =", sort)
+	//fmt.Println("desc =", desc)
 
 	sortedPosts, err, status := models.GetSortedPosts(existingThread, limit, since, sort, desc)
 	if err != nil {
@@ -100,14 +107,14 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdatePost(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("UpdatePost", req.URL)
+	//log.Println("=============")
+	//log.Println("UpdatePost", req.URL)
 
-	postId, err := checkVar("id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
-		return
-	}
+	postId, _ := checkVar("id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
+	//	return
+	//}
 	id, err := strconv.ParseInt(postId.(string), 10, 64)
 	if id == 0 {
 		id = -1
@@ -120,25 +127,30 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	//newPost := models.Post{}
+	//status, err = ParseRequestIntoStruct(req, &newPost)
+	//if err != nil {
+	//	ErrResponse(res, status, err.Error())
+	//
+	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
+	//	return
+	//}
+
 	newPost := models.Post{}
+	body, _ := ioutil.ReadAll(req.Body)
+	defer req.Body.Close()
+	_ = newPost.UnmarshalJSON(body)
 
-	status, err = ParseRequestIntoStruct(req, &newPost)
-	if err != nil {
-		ErrResponse(res, status, err.Error())
+	//fmt.Println("--== existing post ==--")
+	//models.PrintPost(existingPost)
 
-		log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-		return
-	}
-	fmt.Println("--== existing post ==--")
-	models.PrintPost(existingPost)
-
-	fmt.Println("--== new post ==--")
-	models.PrintPost(newPost)
+	//fmt.Println("--== new post ==--")
+	//models.PrintPost(newPost)
 
 	updatedPost, err, status := models.UpdatePost(existingPost, newPost)
 
-	fmt.Println("--== updated ==--")
-	models.PrintPost(updatedPost)
+	//fmt.Println("--== updated ==--")
+	//models.PrintPost(updatedPost)
 
 	if err != nil {
 		ErrResponse(res, status, err.Error())
@@ -150,24 +162,24 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetPostInfo(res http.ResponseWriter, req *http.Request) {
-	log.Println("=============")
-	log.Println("GetPostInfo", req.URL)
+	//log.Println("=============")
+	//log.Println("GetPostInfo", req.URL)
 
-	slug, err := checkVar("id", req)
-	if err != nil {
-		ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
-		return
-	}
-	id, err := strconv.ParseInt(slug.(string), 10, 64)
+	slug, _ := checkVar("id", req)
+	//if err != nil {
+	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
+	//	return
+	//}
+	id, _ := strconv.ParseInt(slug.(string), 10, 64)
 	if id == 0 {
 		id = -1
 	}
 
 	query := req.URL.Query()
-	fmt.Println(query)
+	//fmt.Println(query)
 
 	related := strings.Split(query.Get("related"), ",")
-	fmt.Println(related)
+	//fmt.Println(related)
 
 	existingPost, err, status := models.GetPostByID(id)
 	if err != nil {
@@ -175,6 +187,7 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 
 		return
 	}
+	//existingPost.Created = existingPost.Created.UTC()
 
 	tupaKek, err, status := models.GetPostDetails(existingPost, related)
 	if err != nil {

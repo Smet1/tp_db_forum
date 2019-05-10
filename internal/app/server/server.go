@@ -1,10 +1,10 @@
 package server
 
 import (
+	"github.com/Smet1/tp_db_forum/internal/pkg/controllers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"net/http"
-	"tp_db_forum/internal/pkg/controllers"
 )
 
 func Run(port string) error {

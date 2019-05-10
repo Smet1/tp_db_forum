@@ -5,15 +5,20 @@ import (
 )
 
 var config = pgx.ConnConfig{
-	Host:     "localhost",
-	Port:     5432,
+	Host: "localhost",
+	Port: 5432,
+	//Database: "postgres",
 	Database: "docker",
 	User:     "docker",
 	Password: "docker",
 }
 
-var Connection, _ = pgx.NewConnPool(
-	pgx.ConnPoolConfig{
-		ConnConfig:     config,
-		MaxConnections: 1000,
-	})
+var Connection *pgx.ConnPool
+
+func init() {
+	Connection, _ = pgx.NewConnPool(
+		pgx.ConnPoolConfig{
+			ConnConfig:     config,
+			MaxConnections: 50,
+		})
+}

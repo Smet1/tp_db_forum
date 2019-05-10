@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/Smet1/tp_db_forum/internal/app/server"
 	"github.com/pkg/errors"
 	"log"
-	"tp_db_forum/internal/app/server"
 )
 
 func main() {
