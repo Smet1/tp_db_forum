@@ -2,10 +2,10 @@ package models
 
 import (
 	"fmt"
-	"github.com/go-openapi/strfmt"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,7 +53,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	tx, _ := conn.Begin()
 	defer tx.Rollback()
 
-	now := strfmt.DateTime(time.Now())
+	//now := strfmt.DateTime(time.Now())
 	//fmt.Println("==", now, now.UTC())
 
 	//var id int64 = 0
@@ -78,12 +78,12 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 		if _, ok := mapParents[post.Parent]; !ok && post.Parent != 0 {
 			parentPostQuery, err, _ := GetPostByID(post.Parent)
 			if err != nil {
-				//log.Println("lel1")
+				log.Println("lel1")
 				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
 			}
 
 			if parentPostQuery.Thread != existingThread.ID {
-				//log.Println("lel2, parentPostQuery.Thread=", parentPostQuery.Thread, "existingThread.ID=", existingThread.ID)
+				log.Println("lel2, parentPostQuery.Thread=", parentPostQuery.Thread, "existingThread.ID=", existingThread.ID)
 				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
 			}
 
@@ -99,6 +99,8 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	postIdsRows, err := tx.Query(fmt.Sprintf(`SELECT nextval(pg_get_serial_sequence('forum_post', 'id'))
 FROM generate_series(1, %d);`, len(postsToCreate)))
 	if err != nil {
+		log.Println(errors.Wrap(err, "cant reserve id's"))
+
 		return []Post{}, errors.Wrap(err, "cant reserve id's"), http.StatusNotFound
 	}
 	var postIds []int64
@@ -110,7 +112,32 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 	postIdsRows.Close()
 	// TODO(): до сюда
 
+	postsToCreate[0].Path = append(mapParents[postsToCreate[0].Parent].Path, postIds[0])
+
+	//timePG := &pgtype.Timestamptz{}
+
+	err = tx.QueryRow(`INSERT INTO forum_post (id, author, forum, message, parent, thread, path) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING created`,
+		postIds[0], postsToCreate[0].Author, existingThread.Forum, postsToCreate[0].Message, postsToCreate[0].Parent,
+		existingThread.ID,
+		"{"+strings.Trim(strings.Replace(fmt.Sprint(postsToCreate[0].Path), " ", ",", -1), "[]")+"}").
+		Scan(&postsToCreate[0].Created)
+
+	if err != nil {
+		log.Println(errors.Wrap(err, "cant insert post"))
+		return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
+	}
+
+	now := postsToCreate[0].Created
+
+	postsToCreate[0].Forum = existingThread.Forum
+	postsToCreate[0].Thread = existingThread.ID
+	postsToCreate[0].Created = time.Time(now)
+	postsToCreate[0].ID = postIds[0]
+
 	for i, post := range postsToCreate {
+		if i == 0 {
+			continue
+		}
 		//fmt.Println("--", i, "--")
 
 		//if post.Parent != 0 {
@@ -145,11 +172,13 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 		//fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
 
 		if err != nil {
+			log.Println(errors.Wrap(err, "cant insert post"))
 			return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
 		}
 
 		if resInsert.RowsAffected() == 0 {
-			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
+			log.Println(errors.Wrap(err, "cant create posts"))
+			return []Post{}, errors.Wrap(err, "cant create posts"), http.StatusNotFound
 		}
 		//if err != nil {
 		//	return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
@@ -170,6 +199,7 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 	//status := UpdateForumStats(existingForum, "post", true, len(postsToCreate))
 	status := UpdateForumStats(Forum{Slug: existingThread.Forum}, "post", true, len(postsToCreate))
 	if status != http.StatusOK {
+		log.Println(errors.Wrap(err, "cant update forum stats"))
 		return []Post{}, errors.New("cant update forum stats"), status
 	}
 

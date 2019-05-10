@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS forum_forum CASCADE;
 DROP TABLE IF EXISTS forum_thread CASCADE;
 DROP TABLE IF EXISTS forum_post CASCADE;
 DROP TABLE IF EXISTS forum_vote CASCADE;
+DROP TABLE IF EXISTS forum_users_forum CASCADE;
 
 CREATE TABLE IF NOT EXISTS forum_users
 (
@@ -60,14 +61,14 @@ CREATE INDEX IF not exists forum_thread_author_forum ON forum_thread (author, fo
 CREATE TABLE IF NOT EXISTS forum_post
 (
     author   citext REFERENCES forum_users (nickname) NOT NULL,
-    created  timestamptz,
+    created  TIMESTAMPTZ DEFAULT transaction_timestamp(),
     forum    citext REFERENCES forum_forum (slug),
     id       SERIAL PRIMARY KEY,
-    isEdited BOOLEAN   DEFAULT FALSE,
+    isEdited BOOLEAN     DEFAULT FALSE,
     message  TEXT                                     NOT NULL,
-    parent   INTEGER   DEFAULT 0,
+    parent   INTEGER     DEFAULT 0,
     thread   INTEGER REFERENCES forum_thread (id)     NOT NULL,
-    path     INTEGER[] DEFAULT array []::INT[]
+    path     INTEGER[]   DEFAULT array []::INT[]
 );
 
 
@@ -103,6 +104,6 @@ CREATE INDEX IF not exists forum_vote_nickname_thread ON forum_vote (nickname, t
 CREATE TABLE IF NOT EXISTS forum_users_forum
 (
     nickname citext REFERENCES forum_users (nickname) NOT NULL,
-    slug  citext REFERENCES forum_forum (slug)  NOT NULL,
+    slug     citext REFERENCES forum_forum (slug)     NOT NULL,
     UNIQUE (nickname, slug)
 );
