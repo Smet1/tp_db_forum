@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/go-openapi/strfmt"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
@@ -52,7 +53,9 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	tx, _ := conn.Begin()
 	defer tx.Rollback()
 
-	now := time.Now().UTC()
+	now := strfmt.DateTime(time.Now())
+	//fmt.Println("==", now, now.UTC())
+
 	//var id int64 = 0
 	//// get last id
 	//res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
@@ -154,7 +157,7 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 
 		postsToCreate[i].Forum = existingThread.Forum
 		postsToCreate[i].Thread = existingThread.ID
-		postsToCreate[i].Created = now
+		postsToCreate[i].Created = time.Time(now)
 		postsToCreate[i].ID = postIds[i]
 		//id++
 

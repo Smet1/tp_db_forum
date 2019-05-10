@@ -184,6 +184,7 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 
 		return
 	}
+	//existingPost.Created = existingPost.Created.UTC()
 
 	tupaKek, err, status := models.GetPostDetails(existingPost, related)
 	if err != nil {
