@@ -109,7 +109,7 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 
 func UpdatePost(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("UpdatePost", req.URL)
+	//log.Println("UpdatePost", req.URL)
 
 	postId, _ := checkVar("id", req)
 	//if err != nil {
@@ -164,7 +164,7 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 
 func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 	//log.Println("=============")
-	log.Println("GetPostInfo", req.URL)
+	//log.Println("GetPostInfo", req.URL)
 
 	slug, _ := checkVar("id", req)
 	//if err != nil {

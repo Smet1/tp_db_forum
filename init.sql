@@ -7,6 +7,21 @@ DROP TABLE IF EXISTS forum_post CASCADE;
 DROP TABLE IF EXISTS forum_vote CASCADE;
 DROP TABLE IF EXISTS forum_users_forum CASCADE;
 
+DROP INDEX IF EXISTS forum_users_nickname;
+
+DROP INDEX IF EXISTS forum_thread_slug;
+DROP INDEX IF EXISTS forum_thread_forum_created;
+DROP INDEX IF EXISTS forum_thread_author_forum;
+
+DROP INDEX IF EXISTS forum_post_path_id;
+DROP INDEX IF EXISTS forum_post_thread_id;
+DROP INDEX IF EXISTS forum_post_thread;
+DROP INDEX IF EXISTS forum_post_thread_path_id;
+DROP INDEX IF EXISTS forum_post_thread_id_path_parent;
+DROP INDEX IF EXISTS forum_post_author_forum;
+
+DROP INDEX IF EXISTS forum_vote_nickname_thread;
+
 CREATE TABLE IF NOT EXISTS forum_users
 (
 --     id       SERIAL PRIMARY KEY,
@@ -71,23 +86,14 @@ CREATE TABLE IF NOT EXISTS forum_post
     path     INTEGER[]   DEFAULT array []::INT[]
 );
 
-
--- CREATE INDEX IF NOT EXISTS posts_id_index ON forum_post (id);
--- CREATE INDEX IF NOT EXISTS posts_forum_index ON forum_post (forum);
--- CREATE INDEX IF NOT EXISTS posts_main_index ON forum_post (thread, parent);
--- CREATE INDEX IF NOT EXISTS posts_thread_index ON forum_post (thread);
-
--- CREATE INDEX IF NOT EXISTS forum_post_path_id ON forum_post (path, id);
--- -- GetSortedPosts
--- CREATE INDEX IF not exists forum_post_path ON forum_post (path);
--- -- FlatSort
+CREATE INDEX IF NOT EXISTS forum_post_path_id ON forum_post (id, (path [1]));
+CREATE INDEX IF NOT EXISTS forum_post_path ON forum_post (path);
+CREATE INDEX IF NOT EXISTS forum_post_path_1 ON forum_post ((path [1]));
 CREATE INDEX IF not exists forum_post_thread_id ON forum_post (thread, id);
--- -- TreeSort, ParentTreeSort
+CREATE INDEX IF not exists forum_post_thread ON forum_post (thread);
 CREATE INDEX IF not exists forum_post_thread_path_id ON forum_post (thread, path, id);
-CREATE INDEX IF NOT EXISTS forum_post_thread_id_path_parent ON forum_post (thread, id, path, parent);
-
--- GetForumUsers (хз)
-CREATE INDEX IF not exists forum_post_author_forum ON forum_post (author, forum);
+CREATE INDEX IF NOT EXISTS forum_post_thread_id_path_parent ON forum_post (thread, id, (path[1]), parent);
+CREATE INDEX IF not exists forum_post_author_forum ON forum_post (author, forum); -- если нигде не используется удалить нахуй
 
 
 CREATE TABLE IF NOT EXISTS forum_vote
