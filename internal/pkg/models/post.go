@@ -52,7 +52,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	tx, _ := conn.Begin()
 	defer tx.Rollback()
 
-	now := time.Now()
+	now := time.Now().UTC()
 	//var id int64 = 0
 	//// get last id
 	//res, err := conn.Query(`SELECT last_value FROM forum_post_id_seq`)
@@ -141,9 +141,9 @@ FROM generate_series(1, %d);`, len(postsToCreate)))
 
 		//fmt.Println("\tpath = ", strings.Trim(strings.Replace(fmt.Sprint(post.Path), " ", ",", -1), "[]"))
 
-		//if err != nil {
-		//	return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusInternalServerError
-		//}
+		if err != nil {
+			return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
+		}
 
 		if resInsert.RowsAffected() == 0 {
 			return []Post{}, errors.Wrap(err, "cant create thread"), http.StatusNotFound
