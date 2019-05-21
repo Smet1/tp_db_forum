@@ -1,27 +1,14 @@
 package controllers
 
 import (
-	"github.com/Smet1/tp_db_forum/internal/pkg/models"
-	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
-)
 
-//func ParseRequestIntoStruct(req *http.Request, requestStruct interface{}) (int, error) {
-//	body, err := ioutil.ReadAll(req.Body)
-//	if err != nil {
-//		return http.StatusInternalServerError, errors.Wrap(err, "body parsing error")
-//	}
-//
-//	err = json.Unmarshal(body, &requestStruct)
-//	if err != nil {
-//		return http.StatusInternalServerError, errors.Wrap(err, "json parsing error")
-//	}
-//
-//	return 0, nil
-//}
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
+)
 
 func checkVar(varName string, req *http.Request) (interface{}, error) {
 	requestVariables := mux.Vars(req)
@@ -40,7 +27,6 @@ func checkVar(varName string, req *http.Request) (interface{}, error) {
 }
 
 func GetUserProfile(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetUserProfile", req.URL)
 
 	searchingNickname, _ := checkVar("nickname", req)
@@ -59,25 +45,11 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("UpdateUserProfile", req.URL)
 
 	nicknameToUpdate, _ := checkVar("nickname", req)
 	//if err != nil {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
-	//	return
-	//}
-
-	//u := models.User{}
-
-	//body, _ := ioutil.ReadAll(req.Body)
-	//u.UnmarshalJSON(body)
-
-	//status, err := ParseRequestIntoStruct(req, &u)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 	//	return
 	//}
 
@@ -98,28 +70,11 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 }
 
 func CreateUser(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("CreateUser", req.URL)
 
 	nicknameToCreate, _ := checkVar("nickname", req)
 	//if err != nil {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user nickname").Error())
-	//	return
-	//}
-
-	//u, err := models.GetUserByNickname(searchingNickname)
-	//if err == nil && u.Email != "" {
-	//	ErrResponseObject(res, http.StatusConflict, u)
-	//
-	//	return
-	//}
-
-	//u := models.User{}
-	//status, err := ParseRequestIntoStruct(req, &u)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 	//	return
 	//}
 
@@ -129,22 +84,18 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	_ = u.UnmarshalJSON(body)
 
 	u.Nickname = nicknameToCreate.(string)
-	//existingUser, err := models.GetUserByEmail(u.Email)
-	//if err == nil && u.Email != "" {
-	//	ErrResponseObject(res, http.StatusConflict, existingUser)
-	//
-	//	return
-	//}
 
 	createdUser, err := models.CreateUser(u)
 	if err != nil {
 		exitingUsers, err := models.GetUserByNicknameOrEmail(u.Nickname, u.Email)
 		if err != nil {
 			ErrResponse(res, http.StatusConflict, err.Error())
+
 			return
 		}
 
 		ResponseObject(res, http.StatusConflict, exitingUsers)
+
 		return
 	}
 
@@ -152,7 +103,6 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetForumUsers(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetForumUsers", req.URL)
 
 	query := req.URL.Query()
@@ -160,18 +110,11 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	since := query.Get("since")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	//fmt.Println(query)
-	//fmt.Println(limit)
-	//fmt.Println(since)
-	//fmt.Println(desc)
-
 	searchingSlug, _ := checkVar("slug", req)
 	//if err != nil {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get forum slug").Error())
 	//	return
 	//}
-
-	//fmt.Println(searchingSlug)
 
 	existingForum, err := models.GetForumBySlug(searchingSlug.(string))
 	if err != nil {
@@ -183,10 +126,12 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		if status == http.StatusNotFound {
 			ErrResponse(res, status, err.Error())
+
 			return
 		}
 
 		ErrResponse(res, status, err.Error())
+
 		return
 	}
 

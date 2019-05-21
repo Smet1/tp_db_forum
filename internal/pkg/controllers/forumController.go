@@ -1,23 +1,14 @@
 package controllers
 
 import (
-	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("CreateForum", req.URL)
-
-	//f := models.Forum{}
-	//status, err := ParseRequestIntoStruct(req, &f)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-	//	return
-	//}
 
 	f := models.Forum{}
 	body, _ := ioutil.ReadAll(req.Body)
@@ -31,8 +22,6 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 			ErrResponse(res, http.StatusNotFound, "Can't find user with nickname "+f.User)
 			return
 		}
-
-		//fmt.Println(user)
 
 		existingForum, err := models.GetForumBySlug(f.Slug)
 		if err != nil {
@@ -48,7 +37,6 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetForum", req.URL)
 
 	searchingSlug, _ := checkVar("slug", req)

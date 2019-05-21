@@ -1,24 +1,24 @@
 package controllers
 
 import (
-	"github.com/Smet1/tp_db_forum/internal/pkg/models"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
+	"github.com/pkg/errors"
 )
 
 func CreatePosts(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("CreatePosts", req.URL)
 
-	slugOrId, _ := checkVar("slug_or_id", req)
+	slugOrID, _ := checkVar("slug_or_id", req)
 	//if err != nil {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 	//	return
 	//}
-	slug := slugOrId.(string)
+	slug := slugOrID.(string)
 	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
@@ -29,8 +29,6 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 		ErrResponse(res, status, errors.Wrap(err, "not found").Error())
 		return
 	}
-
-	//fmt.Println(existingThread)
 
 	//postsToCreate := make([]models.Post, 0, 1)
 	//status, err = ParseRequestIntoStruct(req, &postsToCreate)
@@ -62,15 +60,14 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetThreadPosts", req.URL)
 
-	slugOrId, _ := checkVar("slug_or_id", req)
+	slugOrID, _ := checkVar("slug_or_id", req)
 	//if err != nil {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 	//	return
 	//}
-	slug := slugOrId.(string)
+	slug := slugOrID.(string)
 	id, err := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
@@ -82,19 +79,11 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//fmt.Println(existingThread)
-
 	query := req.URL.Query()
 	limit, _ := strconv.Atoi(query.Get("limit"))
 	since, _ := strconv.Atoi(query.Get("since"))
 	sort := query.Get("sort")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
-
-	//fmt.Println("query =", query)
-	//fmt.Println("limit =", limit)
-	//fmt.Println("since =", since)
-	//fmt.Println("sort =", sort)
-	//fmt.Println("desc =", desc)
 
 	sortedPosts, err, status := models.GetSortedPosts(existingThread, limit, since, sort, desc)
 	if err != nil {
@@ -107,7 +96,6 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 }
 
 func UpdatePost(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("UpdatePost", req.URL)
 
 	postId, _ := checkVar("id", req)
@@ -127,30 +115,12 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//newPost := models.Post{}
-	//status, err = ParseRequestIntoStruct(req, &newPost)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-	//	return
-	//}
-
 	newPost := models.Post{}
 	body, _ := ioutil.ReadAll(req.Body)
 	defer req.Body.Close()
 	_ = newPost.UnmarshalJSON(body)
 
-	//fmt.Println("--== existing post ==--")
-	//models.PrintPost(existingPost)
-
-	//fmt.Println("--== new post ==--")
-	//models.PrintPost(newPost)
-
 	updatedPost, err, status := models.UpdatePost(existingPost, newPost)
-
-	//fmt.Println("--== updated ==--")
-	//models.PrintPost(updatedPost)
 
 	if err != nil {
 		ErrResponse(res, status, err.Error())
@@ -162,7 +132,6 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 }
 
 func GetPostInfo(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetPostInfo", req.URL)
 
 	slug, _ := checkVar("id", req)
@@ -176,10 +145,8 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 	}
 
 	query := req.URL.Query()
-	//fmt.Println(query)
 
 	related := strings.Split(query.Get("related"), ",")
-	//fmt.Println(related)
 
 	existingPost, err, status := models.GetPostByID(id)
 	if err != nil {
@@ -187,7 +154,6 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 
 		return
 	}
-	//existingPost.Created = existingPost.Created.UTC()
 
 	tupaKek, err, status := models.GetPostDetails(existingPost, related)
 	if err != nil {

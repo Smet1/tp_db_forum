@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/Smet1/tp_db_forum/internal/pkg/models"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
+	"github.com/pkg/errors"
 )
 
 func PrintThread(t models.Thread) {
@@ -21,22 +22,11 @@ func PrintThread(t models.Thread) {
 }
 
 func CreateThread(res http.ResponseWriter, req *http.Request) {
-	//idLog := rand.Int31n(1000)
-	//log.Println("=============")
 	//log.Println("CreateThread", req.URL)
 
 	slugName, _ := checkVar("slug", req)
 	//if err != nil {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
-	//	return
-	//}
-
-	//t := models.Thread{}
-	//status, err := ParseRequestIntoStruct(req, &t)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
 	//	return
 	//}
 
@@ -46,27 +36,19 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 	_ = t.UnmarshalJSON(body)
 
 	t.Forum = slugName.(string)
-	//fmt.Println("\tGET")
-	//PrintThread(t)
 
 	createdThread, err, status := models.CreateThread(t)
 	if err != nil {
 		if status == http.StatusNotFound {
-			//fmt.Println("--==not found==--")
 			ErrResponse(res, status, err.Error())
 
-			//log.Println(err.Error())
 			return
 		}
 
 		if status == http.StatusConflict {
-			//fmt.Println("--==conflict==--")
-			//fmt.Println("slug = ", t.Slug)
-
 			conflictThread, _, _ := models.GetThreadByIDorSlug(-1, t.Slug)
 			ResponseObject(res, status, conflictThread)
 
-			//log.Println(err.Error())
 			return
 		}
 
@@ -80,14 +62,10 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 		//return
 	}
 
-	//fmt.Println("\tCREATED, idLog=", idLog)
-	//PrintThread(createdThread)
-
 	ResponseObject(res, http.StatusCreated, createdThread)
 }
 
 func GetThreads(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetThreads", req.URL)
 
 	slugName, _ := checkVar("slug", req)
@@ -101,11 +79,6 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 	since := query.Get("since")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	//fmt.Println(query)
-	//fmt.Println(limit)
-	//fmt.Println(since)
-	//fmt.Println(desc)
-
 	threads, err, status := models.GetForumThreads(slugName.(string), limit, since, desc)
 	if err != nil {
 		if status == http.StatusNotFound {
@@ -118,15 +91,9 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ResponseObject(res, http.StatusOK, threads)
-	//fmt.Println("OK RESP")
-	//for i, val := range threads {
-	//	fmt.Println("--", i, "--")
-	//	PrintThread(val)
-	//}
 }
 
 func UpdateThread(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("UpdateThread", req.URL)
 
 	slugOrId, _ := checkVar("slug_or_id", req)
@@ -141,22 +108,10 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 		id = -1
 	}
 
-	//t := models.Thread{}
-	//status, err := ParseRequestIntoStruct(req, &t)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-	//	return
-	//}
-
 	t := models.Thread{}
 	body, _ := ioutil.ReadAll(req.Body)
 	defer req.Body.Close()
 	t.UnmarshalJSON(body)
-
-	//fmt.Println("--== new ==--")
-	//PrintThread(t)
 
 	existingThread, err, status := models.GetThreadByIDorSlug(int(id), slug)
 	if err != nil {
@@ -164,18 +119,12 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//fmt.Println("--== existing ==--")
-	//PrintThread(existingThread)
-
 	updatedThread, err, status := models.UpdateThread(existingThread, t)
 	if err != nil {
 		ErrResponse(res, status, err.Error())
 
 		return
 	}
-
-	//fmt.Println("--== updated ==--")
-	//PrintThread(updatedThread)
 
 	ResponseObject(res, status, updatedThread)
 }

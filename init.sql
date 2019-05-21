@@ -76,7 +76,7 @@ CREATE INDEX IF not exists forum_thread_author_forum ON forum_thread (author, fo
 CREATE TABLE IF NOT EXISTS forum_post
 (
     author   citext REFERENCES forum_users (nickname) NOT NULL,
-    created  TIMESTAMPTZ DEFAULT transaction_timestamp(), -- сделать current_timestamp (посоветовал ник)
+    created  TIMESTAMPTZ DEFAULT current_timestamp(), -- сделать current_timestamp (посоветовал ник)
     forum    citext REFERENCES forum_forum (slug),
     id       SERIAL PRIMARY KEY,
     isEdited BOOLEAN     DEFAULT FALSE,
