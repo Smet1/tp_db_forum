@@ -57,7 +57,7 @@ RUN /etc/init.d/postgresql start &&\
 
 # Adjust PostgreSQL configuration so that remote connections to the
 # database are possible.
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
 
 # And add ``listen_addresses`` to ``/etc/postgresql/$PGVER/main/postgresql.conf``
 #RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
@@ -67,14 +67,14 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba
 #RUN echo "fsync = 'off'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
 # какого-то челика
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGSQLVER/main/pg_hba.conf 
-RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf 
-RUN echo "fsync = off" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf 
-RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf 
-RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf 
-RUN echo "random_page_cost = 1.0" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf 
-RUN echo "wal_level = minimal" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf 
-RUN echo "max_wal_senders = 0" >> /etc/postgresql/$PGSQLVER/main/postgresql.conf
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "random_page_cost = 1.0" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "wal_level = minimal" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "max_wal_senders = 0" >> /etc/postgresql/$PGVER/main/postgresql.conf
 # до сюда
 
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
@@ -110,6 +110,6 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 USER root
 # Запускаем PostgreSQL и сервер
 #
-RUN go mod vendor
+#RUN go mod vendor
 RUN go build -mod=vendor /server/cmd/server/main.go
 CMD service postgresql start && ./main

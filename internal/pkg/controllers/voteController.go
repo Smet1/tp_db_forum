@@ -19,7 +19,7 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 	//	//log.Println("CreateVote", err)
 	//	return
 	//}
-	slug := slugOrID.(string)
+	slug := slugOrID
 	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
@@ -66,7 +66,7 @@ func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 	//	return
 	//}
-	slug := slugOrID.(string)
+	slug := slugOrID
 	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1

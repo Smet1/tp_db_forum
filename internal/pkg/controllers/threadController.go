@@ -35,7 +35,7 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	_ = t.UnmarshalJSON(body)
 
-	t.Forum = slugName.(string)
+	t.Forum = slugName
 
 	createdThread, err, status := models.CreateThread(t)
 	if err != nil {
@@ -81,7 +81,7 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 	since := query.Get("since")
 	desc, _ := strconv.ParseBool(query.Get("desc"))
 
-	threads, err, status := models.GetForumThreads(slugName.(string), limit, since, desc)
+	threads, err, status := models.GetForumThreads(slugName, limit, since, desc)
 	if err != nil {
 		if status == http.StatusNotFound {
 			ErrResponse(res, status, err.Error())
@@ -107,7 +107,7 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 	//	return
 	//}
 
-	slug := slugOrId.(string)
+	slug := slugOrId
 	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1

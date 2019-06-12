@@ -18,7 +18,7 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 	//	return
 	//}
-	slug := slugOrID.(string)
+	slug := slugOrID
 	id, _ := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
@@ -69,7 +69,7 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get user slug").Error())
 	//	return
 	//}
-	slug := slugOrID.(string)
+	slug := slugOrID
 	id, err := strconv.ParseInt(slug, 10, 32)
 	if id == 0 {
 		id = -1
@@ -107,7 +107,7 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
 	//	return
 	//}
-	id, err := strconv.ParseInt(postId.(string), 10, 64)
+	id, err := strconv.ParseInt(postId, 10, 64)
 	if id == 0 {
 		id = -1
 	}
@@ -144,7 +144,7 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 	//	ErrResponse(res, http.StatusBadRequest, errors.Wrap(err, "cant get post id").Error())
 	//	return
 	//}
-	id, _ := strconv.ParseInt(slug.(string), 10, 64)
+	id, _ := strconv.ParseInt(slug, 10, 64)
 	if id == 0 {
 		id = -1
 	}

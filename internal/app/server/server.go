@@ -46,22 +46,22 @@ func Run(port string) error {
 
 	gojiRouter.HandleFunc(pat.Post("/api/forum/create"), controllers.CreateForum)
 
-	gojiRouter.HandleFunc(pat.Get("/api/forum/{slug}/details"), controllers.GetForum)
-	gojiRouter.HandleFunc(pat.Post("/api/forum/{slug}/create"), controllers.CreateThread)
-	gojiRouter.HandleFunc(pat.Get("/api/forum/{slug}/threads"), controllers.GetThreads)
-	gojiRouter.HandleFunc(pat.Get("/api/forum/{slug}/users"), controllers.GetForumUsers)
+	gojiRouter.HandleFunc(pat.Get("/api/forum/:slug/details"), controllers.GetForum)
+	gojiRouter.HandleFunc(pat.Post("/api/forum/:slug/create"), controllers.CreateThread)
+	gojiRouter.HandleFunc(pat.Get("/api/forum/:slug/threads"), controllers.GetThreads)
+	gojiRouter.HandleFunc(pat.Get("/api/forum/:slug/users"), controllers.GetForumUsers)
 
-	gojiRouter.HandleFunc(pat.Post("/api/thread/{slug_or_id}/create"), controllers.CreatePosts)
-	gojiRouter.HandleFunc(pat.Get("/api/thread/{slug_or_id}/details"), controllers.GetThreadDetails)
-	gojiRouter.HandleFunc(pat.Post("/api/thread/{slug_or_id}/details"), controllers.UpdateThread)
-	gojiRouter.HandleFunc(pat.Post("/api/thread/{slug_or_id}/vote"), controllers.CreateVote)
-	gojiRouter.HandleFunc(pat.Get("/api/thread/{slug_or_id}/posts"), controllers.GetThreadPosts)
+	gojiRouter.HandleFunc(pat.Post("/api/thread/:slug_or_id/create"), controllers.CreatePosts)
+	gojiRouter.HandleFunc(pat.Get("/api/thread/:slug_or_id/details"), controllers.GetThreadDetails)
+	gojiRouter.HandleFunc(pat.Post("/api/thread/:slug_or_id/details"), controllers.UpdateThread)
+	gojiRouter.HandleFunc(pat.Post("/api/thread/:slug_or_id/vote"), controllers.CreateVote)
+	gojiRouter.HandleFunc(pat.Get("/api/thread/:slug_or_id/posts"), controllers.GetThreadPosts)
 
 	gojiRouter.HandleFunc(pat.Get("/api/service/status"), controllers.GetDBStatus)
 	gojiRouter.HandleFunc(pat.Post("/api/service/clear"), controllers.ClearDB)
 
-	gojiRouter.HandleFunc(pat.Post("/api/post/{id}/details"), controllers.UpdatePost)
-	gojiRouter.HandleFunc(pat.Get("/api/post/{id}/details"), controllers.GetPostInfo)
+	gojiRouter.HandleFunc(pat.Post("/api/post/:id/details"), controllers.UpdatePost)
+	gojiRouter.HandleFunc(pat.Get("/api/post/:id/details"), controllers.GetPostInfo)
 
 	err := http.ListenAndServe(address, gojiRouter)
 	if err != nil {

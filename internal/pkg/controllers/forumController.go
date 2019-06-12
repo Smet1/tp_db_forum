@@ -47,7 +47,7 @@ func GetForum(res http.ResponseWriter, req *http.Request) {
 	//	return
 	//}
 
-	f, err := models.GetForumBySlug(searchingSlug.(string))
+	f, err := models.GetForumBySlug(searchingSlug)
 	if err != nil || f.User == "" {
 		ErrResponse(res, http.StatusNotFound, "Can't find slug")
 		return

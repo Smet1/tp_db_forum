@@ -1,29 +1,30 @@
 package controllers
 
 import (
+	"goji.io/pat"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/Smet1/tp_db_forum/internal/pkg/models"
-	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
 
-func checkVar(varName string, req *http.Request) (interface{}, error) {
-	requestVariables := mux.Vars(req)
-	if requestVariables == nil {
+func checkVar(varName string, req *http.Request) (string, error) {
+	//requestVariables := mux.Vars(req)
+	requestVariables := pat.Param(req, varName)
+	//if requestVariables == nil {
+	//
+	//	return nil, errors.New("user nickname not provided")
+	//}
+	//
+	//result, ok := requestVariables[varName]
+	//if !ok {
+	//
+	//	return nil, errors.New("vars found, but cant found nickname")
+	//}
 
-		return nil, errors.New("user nickname not provided")
-	}
-
-	result, ok := requestVariables[varName]
-	if !ok {
-
-		return nil, errors.New("vars found, but cant found nickname")
-	}
-
-	return result, nil
+	return requestVariables, nil
 }
 
 func GetUserProfile(res http.ResponseWriter, req *http.Request) {
@@ -35,7 +36,7 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 	//	return
 	//}
 
-	u, err := models.GetUserByNickname(searchingNickname.(string))
+	u, err := models.GetUserByNickname(searchingNickname)
 	if err != nil || u.Email == "" {
 		ErrResponse(res, http.StatusNotFound, "Can't find user")
 
@@ -60,7 +61,7 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	u.UnmarshalJSON(body)
 
-	u.Nickname = nicknameToUpdate.(string)
+	u.Nickname = nicknameToUpdate
 
 	updatedUser, err, errCode := models.UpdateUser(u)
 	if err != nil {
@@ -87,7 +88,7 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	_ = u.UnmarshalJSON(body)
 
-	u.Nickname = nicknameToCreate.(string)
+	u.Nickname = nicknameToCreate
 
 	createdUser, err := models.CreateUser(u)
 	if err != nil {
@@ -122,7 +123,7 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	//	return
 	//}
 
-	existingForum, err := models.GetForumBySlug(searchingSlug.(string))
+	existingForum, err := models.GetForumBySlug(searchingSlug)
 	if err != nil {
 		ErrResponse(res, http.StatusNotFound, errors.Wrap(err, "not found").Error())
 
