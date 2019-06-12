@@ -38,10 +38,12 @@ func GetUserProfile(res http.ResponseWriter, req *http.Request) {
 	u, err := models.GetUserByNickname(searchingNickname.(string))
 	if err != nil || u.Email == "" {
 		ErrResponse(res, http.StatusNotFound, "Can't find user")
+
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, u)
+	//ResponseObject(res, http.StatusOK, u)
+	ResponseEasyObject(res, http.StatusOK, u)
 }
 
 func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
@@ -63,10 +65,12 @@ func UpdateUserProfile(res http.ResponseWriter, req *http.Request) {
 	updatedUser, err, errCode := models.UpdateUser(u)
 	if err != nil {
 		ErrResponse(res, errCode, err.Error())
+
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, updatedUser)
+	//ResponseObject(res, http.StatusOK, updatedUser)
+	ResponseEasyObject(res, http.StatusOK, updatedUser)
 }
 
 func CreateUser(res http.ResponseWriter, req *http.Request) {
@@ -94,12 +98,14 @@ func CreateUser(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		ResponseObject(res, http.StatusConflict, exitingUsers)
+		//ResponseObject(res, http.StatusConflict, exitingUsers)
+		ResponseEasyObject(res, http.StatusConflict, exitingUsers)
 
 		return
 	}
 
-	ResponseObject(res, http.StatusCreated, createdUser)
+	ResponseEasyObject(res, http.StatusCreated, createdUser)
+	//ResponseObject(res, http.StatusCreated, createdUser)
 }
 
 func GetForumUsers(res http.ResponseWriter, req *http.Request) {
@@ -119,6 +125,7 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 	existingForum, err := models.GetForumBySlug(searchingSlug.(string))
 	if err != nil {
 		ErrResponse(res, http.StatusNotFound, errors.Wrap(err, "not found").Error())
+
 		return
 	}
 
@@ -135,5 +142,6 @@ func GetForumUsers(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, users)
+	//ResponseObject(res, http.StatusOK, users)
+	ResponseEasyObject(res, http.StatusOK, users)
 }

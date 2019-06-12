@@ -29,11 +29,13 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		ResponseObject(res, http.StatusConflict, existingForum)
+		//ResponseObject(res, http.StatusConflict, existingForum)
+		ResponseEasyObject(res, http.StatusConflict, existingForum)
 		return
 	}
 
-	ResponseObject(res, http.StatusCreated, createdForum)
+	//ResponseObject(res, http.StatusCreated, createdForum)
+	ResponseEasyObject(res, http.StatusCreated, createdForum)
 }
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
@@ -51,5 +53,6 @@ func GetForum(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, f)
+	//ResponseObject(res, http.StatusOK, f)
+	ResponseEasyObject(res, http.StatusOK, f)
 }

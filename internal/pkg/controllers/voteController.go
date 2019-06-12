@@ -54,7 +54,8 @@ func CreateVote(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, updatedThread)
+	//ResponseObject(res, http.StatusOK, updatedThread)
+	ResponseEasyObject(res, http.StatusOK, updatedThread)
 }
 
 func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
@@ -78,5 +79,6 @@ func GetThreadDetails(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, existingThread)
+	//ResponseObject(res, http.StatusOK, existingThread)
+	ResponseEasyObject(res, http.StatusOK, existingThread)
 }

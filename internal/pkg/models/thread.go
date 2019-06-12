@@ -23,6 +23,9 @@ type Thread struct {
 	Votes   int32     `json:"votes,omitempty"`
 }
 
+//easyjson:json
+type Threads []Thread
+
 func CreateThread(threadToCreate Thread) (Thread, error, int) {
 	conn := database.Connection
 
@@ -81,7 +84,7 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 	return threadToCreate, nil, http.StatusOK
 }
 
-func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread, error, int) {
+func GetForumThreads(slug string, limit int, since string, desc bool) (Threads, error, int) {
 	conn := database.Connection
 
 	queriedThreads := make([]Thread, 0, 1)

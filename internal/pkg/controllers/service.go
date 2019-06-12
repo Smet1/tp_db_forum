@@ -16,7 +16,8 @@ func GetDBStatus(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, status, stats)
+	//ResponseObject(res, status, stats)
+	ResponseEasyObject(res, status, stats)
 }
 
 func ClearDB(res http.ResponseWriter, req *http.Request) {
@@ -25,6 +26,7 @@ func ClearDB(res http.ResponseWriter, req *http.Request) {
 	err, status := models.ClearDB()
 	if err != nil {
 		ErrResponse(res, status, err.Error())
+
 		return
 	}
 

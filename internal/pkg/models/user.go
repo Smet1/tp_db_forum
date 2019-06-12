@@ -16,6 +16,9 @@ type User struct {
 	Nickname string `json:"nickname,omitempty"`
 }
 
+//easyjson:json
+type Users []User
+
 func GetUserByNickname(nickname string) (User, error) {
 	conn := database.Connection
 	u := User{}
@@ -56,7 +59,7 @@ func GetUserByEmail(email string) (User, error) {
 	return u, nil
 }
 
-func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
+func GetUserByNicknameOrEmail(nickname string, email string) (Users, error) {
 	result := make([]User, 0, 1)
 	conn := database.Connection
 	u := User{}
@@ -139,7 +142,7 @@ func UpdateUser(userToUpdate User) (User, error, int) {
 	return updatedUser, nil, http.StatusOK
 }
 
-func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool) ([]User, error, int) {
+func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool) (Users, error, int) {
 	conn := database.Connection
 
 	baseSQL := `SELECT about, email, fullname, fu.nickname FROM forum_users_forum JOIN forum_users fu ON fu.nickname = forum_users_forum.nickname`

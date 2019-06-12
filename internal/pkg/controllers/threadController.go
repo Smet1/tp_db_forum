@@ -47,7 +47,8 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 
 		if status == http.StatusConflict {
 			conflictThread, _, _ := models.GetThreadByIDorSlug(-1, t.Slug)
-			ResponseObject(res, status, conflictThread)
+			//ResponseObject(res, status, conflictThread)
+			ResponseEasyObject(res, status, conflictThread)
 
 			return
 		}
@@ -62,7 +63,8 @@ func CreateThread(res http.ResponseWriter, req *http.Request) {
 		//return
 	}
 
-	ResponseObject(res, http.StatusCreated, createdThread)
+	ResponseEasyObject(res, http.StatusCreated, createdThread)
+	//ResponseObject(res, http.StatusCreated, createdThread)
 }
 
 func GetThreads(res http.ResponseWriter, req *http.Request) {
@@ -83,14 +85,17 @@ func GetThreads(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		if status == http.StatusNotFound {
 			ErrResponse(res, status, err.Error())
+
 			return
 		}
 
 		ErrResponse(res, status, err.Error())
+
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, threads)
+	//ResponseObject(res, http.StatusOK, threads)
+	ResponseEasyObject(res, http.StatusOK, threads)
 }
 
 func UpdateThread(res http.ResponseWriter, req *http.Request) {
@@ -116,6 +121,7 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 	existingThread, err, status := models.GetThreadByIDorSlug(int(id), slug)
 	if err != nil {
 		ErrResponse(res, status, errors.Wrap(err, "not found").Error())
+
 		return
 	}
 
@@ -126,5 +132,6 @@ func UpdateThread(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, status, updatedThread)
+	//ResponseObject(res, status, updatedThread)
+	ResponseEasyObject(res, status, updatedThread)
 }

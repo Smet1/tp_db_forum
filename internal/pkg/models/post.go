@@ -49,7 +49,7 @@ func PrintPost(t Post) {
 	fmt.Println("\tthread = ", t.Thread)
 }
 
-func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, int) {
+func CreatePosts(postsToCreate []Post, existingThread Thread) (Posts, error, int) {
 	conn := database.Connection
 	tx, _ := conn.Begin()
 	defer tx.Rollback()
@@ -60,11 +60,11 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 		if _, ok := mapParents[post.Parent]; !ok && post.Parent != 0 {
 			parentPostQuery, err, _ := GetPostByID(post.Parent)
 			if err != nil {
-				return []Post{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
+				return Posts{}, errors.Wrap(err, "cant get parent post"), http.StatusConflict
 			}
 
 			if parentPostQuery.Thread != existingThread.ID {
-				return []Post{}, errors.New("parent post created in another thread"), http.StatusConflict
+				return Posts{}, errors.New("parent post created in another thread"), http.StatusConflict
 			}
 
 			mapParents[post.Parent] = parentPostQuery
@@ -80,7 +80,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	if err != nil {
 		log.Println(errors.Wrap(err, "cant reserve id's"))
 
-		return []Post{}, errors.Wrap(err, "cant reserve id's"), http.StatusNotFound
+		return Posts{}, errors.Wrap(err, "cant reserve id's"), http.StatusNotFound
 	}
 	var postIds []int64
 	for postIdsRows.Next() {
@@ -101,7 +101,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 
 	if err != nil {
 		log.Println(errors.Wrap(err, "cant insert post"))
-		return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
+		return Posts{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
 	}
 
 	now := postsToCreate[0].Created
@@ -124,12 +124,12 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 
 		if err != nil {
 			log.Println(errors.Wrap(err, "cant insert post"))
-			return []Post{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
+			return Posts{}, errors.Wrap(err, "cant insert post"), http.StatusNotFound
 		}
 
 		if resInsert.RowsAffected() == 0 {
 			log.Println(errors.Wrap(err, "cant create posts"))
-			return []Post{}, errors.Wrap(err, "cant create posts"), http.StatusNotFound
+			return Posts{}, errors.Wrap(err, "cant create posts"), http.StatusNotFound
 		}
 
 		postsToCreate[i].Forum = existingThread.Forum
@@ -143,7 +143,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	status := UpdateForumStats(Forum{Slug: existingThread.Forum}, "post", true, len(postsToCreate))
 	if status != http.StatusOK {
 		log.Println(errors.Wrap(err, "cant update forum stats"))
-		return []Post{}, errors.New("cant update forum stats"), status
+		return Posts{}, errors.New("cant update forum stats"), status
 	}
 
 	go func() {
@@ -155,7 +155,7 @@ func CreatePosts(postsToCreate []Post, existingThread Thread) ([]Post, error, in
 	return postsToCreate, nil, http.StatusOK
 }
 
-func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc bool) ([]Post, error, int) {
+func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc bool) (Posts, error, int) {
 	if sort == "" {
 		sort = "flat"
 	}
@@ -193,7 +193,7 @@ func GetSortedPosts(parentThread Thread, limit int, since int, sort string, desc
 	}
 
 	if len(sortedPosts) == 0 {
-		return []Post{}, nil, http.StatusOK
+		return Posts{}, nil, http.StatusOK
 	}
 
 	return sortedPosts, nil, http.StatusOK

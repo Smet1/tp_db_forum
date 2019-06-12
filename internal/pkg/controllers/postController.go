@@ -44,7 +44,8 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	_ = postsToCreate.UnmarshalJSON(body)
 	if len(postsToCreate) == 0 {
-		ResponseObject(res, http.StatusCreated, postsToCreate)
+		//ResponseObject(res, http.StatusCreated, postsToCreate)
+		ResponseEasyObject(res, http.StatusCreated, postsToCreate)
 		return
 	}
 
@@ -56,7 +57,8 @@ func CreatePosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, http.StatusCreated, createdPosts)
+	//ResponseObject(res, http.StatusCreated, createdPosts)
+	ResponseEasyObject(res, http.StatusCreated, createdPosts)
 }
 
 func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
@@ -76,6 +78,7 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 	existingThread, err, status := models.GetThreadByIDorSlug(int(id), slug)
 	if err != nil {
 		ErrResponse(res, status, errors.Wrap(err, "not found").Error())
+
 		return
 	}
 
@@ -92,7 +95,8 @@ func GetThreadPosts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, status, sortedPosts)
+	//ResponseObject(res, status, sortedPosts)
+	ResponseEasyObject(res, status, sortedPosts)
 }
 
 func UpdatePost(res http.ResponseWriter, req *http.Request) {
@@ -128,7 +132,8 @@ func UpdatePost(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ResponseObject(res, status, updatedPost)
+	ResponseEasyObject(res, status, updatedPost)
+	//ResponseObject(res, status, updatedPost)
 }
 
 func GetPostInfo(res http.ResponseWriter, req *http.Request) {
@@ -164,5 +169,6 @@ func GetPostInfo(res http.ResponseWriter, req *http.Request) {
 
 	tupaKek.Post = &existingPost
 
-	ResponseObject(res, status, tupaKek)
+	ResponseEasyObject(res, status, tupaKek)
+	//ResponseObject(res, status, tupaKek)
 }
