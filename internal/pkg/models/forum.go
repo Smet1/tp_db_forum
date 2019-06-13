@@ -1,10 +1,11 @@
 package models
 
 import (
-	"github.com/Smet1/tp_db_forum/internal/database"
-	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
+
+	"github.com/Smet1/tp_db_forum/internal/database"
+	"github.com/pkg/errors"
 )
 
 //easyjson:json
@@ -31,8 +32,6 @@ func CreateForum(forumToCreate Forum) (Forum, error) {
 	if err != nil {
 		return Forum{}, errors.Wrap(err, "cannot create forum")
 	}
-
-	//AddUser(forumToCreate.User, forumToCreate.Slug)
 
 	return forumToCreate, nil
 }

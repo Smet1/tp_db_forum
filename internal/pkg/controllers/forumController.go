@@ -1,23 +1,14 @@
 package controllers
 
 import (
-	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/Smet1/tp_db_forum/internal/pkg/models"
 )
 
 func CreateForum(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("CreateForum", req.URL)
-
-	//f := models.Forum{}
-	//status, err := ParseRequestIntoStruct(req, &f)
-	//if err != nil {
-	//	ErrResponse(res, status, err.Error())
-	//
-	//	//log.Println("\t", errors.Wrap(err, "ParseRequestIntoStruct error"))
-	//	return
-	//}
 
 	f := models.Forum{}
 	body, _ := ioutil.ReadAll(req.Body)
@@ -32,23 +23,22 @@ func CreateForum(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		//fmt.Println(user)
-
 		existingForum, err := models.GetForumBySlug(f.Slug)
 		if err != nil {
 			ErrResponse(res, http.StatusNotFound, err.Error())
 			return
 		}
 
-		ResponseObject(res, http.StatusConflict, existingForum)
+		//ResponseObject(res, http.StatusConflict, existingForum)
+		ResponseEasyObject(res, http.StatusConflict, existingForum)
 		return
 	}
 
-	ResponseObject(res, http.StatusCreated, createdForum)
+	//ResponseObject(res, http.StatusCreated, createdForum)
+	ResponseEasyObject(res, http.StatusCreated, createdForum)
 }
 
 func GetForum(res http.ResponseWriter, req *http.Request) {
-	//log.Println("=============")
 	//log.Println("GetForum", req.URL)
 
 	searchingSlug, _ := checkVar("slug", req)
@@ -57,11 +47,12 @@ func GetForum(res http.ResponseWriter, req *http.Request) {
 	//	return
 	//}
 
-	f, err := models.GetForumBySlug(searchingSlug.(string))
+	f, err := models.GetForumBySlug(searchingSlug)
 	if err != nil || f.User == "" {
 		ErrResponse(res, http.StatusNotFound, "Can't find slug")
 		return
 	}
 
-	ResponseObject(res, http.StatusOK, f)
+	//ResponseObject(res, http.StatusOK, f)
+	ResponseEasyObject(res, http.StatusOK, f)
 }

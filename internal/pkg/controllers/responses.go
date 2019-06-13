@@ -24,6 +24,16 @@ func addBody(res http.ResponseWriter, bodyMessage interface{}) {
 	res.Write(marshalBody)
 }
 
+func addEasyJSONBody(res http.ResponseWriter, bodyMessage interface{ MarshalJSON() ([]byte, error) }) {
+	blob, err := bodyMessage.MarshalJSON()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	res.Write(blob)
+}
+
 func OkResponse(res http.ResponseWriter, bodyMessage interface{}) {
 	addOkHeader(res)
 	addBody(res, bodyMessage)
@@ -47,4 +57,10 @@ func ResponseObject(res http.ResponseWriter, code int, body interface{}) {
 	res.Header().Set("Content-Type", "application/json")
 	addErrHeader(res, code)
 	addBody(res, body)
+}
+
+func ResponseEasyObject(res http.ResponseWriter, code int, body interface{ MarshalJSON() ([]byte, error) }) {
+	res.Header().Set("Content-Type", "application/json")
+	addErrHeader(res, code)
+	addEasyJSONBody(res, body)
 }

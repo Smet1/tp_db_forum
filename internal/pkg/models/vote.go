@@ -1,9 +1,10 @@
 package models
 
 import (
+	"net/http"
+
 	"github.com/Smet1/tp_db_forum/internal/database"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 //easyjson:json
@@ -22,8 +23,6 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 		voteToCreate.Nickname, voteToCreate.Voice, voteToCreate.Thread)
 
 	if resInsert.RowsAffected() == 0 {
-		//return Thread{}, errors.Wrap(err, "cant create vote"), http.StatusInternalServerError
-		//log.Println(errors.Wrap(err, "cant create vote"), database.Connection.Stat())
 
 		voteBeforeUpdate, _ := GetVoteByNicknameAndThreadID(voteToCreate.Nickname, voteToCreate.Thread)
 		//if err != nil {
@@ -36,9 +35,6 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 		//}
 
 		// если меняем отзыв, то нужно откатить предыдущий и накатить новый, поэтому ±2
-		//fmt.Println("---=== idLog =", idLog, "check voiceDiff =", voiceDiff, "&& voteToCreate.Voice =", voteToCreate.Voice,
-		//	"&& voteBeforeUpdate.Voice = ", voteBeforeUpdate.Voice, "vote =", voteBeforeUpdate)
-
 		if voteToCreate.Voice == -1 && voteToCreate.Voice != voteBeforeUpdate.Voice {
 			voiceDiff = -2
 		} else if voteToCreate.Voice == 1 && voteToCreate.Voice != voteBeforeUpdate.Voice {
@@ -46,8 +42,6 @@ func CreateVoteAndUpdateThread(voteToCreate Vote) (Thread, error, int) {
 		} else if voteToCreate.Voice == voteBeforeUpdate.Voice {
 			voiceDiff = 0
 		}
-
-		//fmt.Println("---=== after check", voiceDiff)
 	}
 
 	updatedThread, err, status := UpdateThreadVote(voteToCreate.Thread, voiceDiff)

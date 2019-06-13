@@ -1,10 +1,11 @@
 package models
 
 import (
-	"github.com/Smet1/tp_db_forum/internal/database"
-	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
+
+	"github.com/Smet1/tp_db_forum/internal/database"
+	"github.com/pkg/errors"
 )
 
 //easyjson:json
@@ -14,6 +15,9 @@ type User struct {
 	Fullname string `json:"fullname"`
 	Nickname string `json:"nickname,omitempty"`
 }
+
+//easyjson:json
+type Users []User
 
 func GetUserByNickname(nickname string) (User, error) {
 	conn := database.Connection
@@ -55,7 +59,7 @@ func GetUserByEmail(email string) (User, error) {
 	return u, nil
 }
 
-func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
+func GetUserByNicknameOrEmail(nickname string, email string) (Users, error) {
 	result := make([]User, 0, 1)
 	conn := database.Connection
 	u := User{}
@@ -74,12 +78,6 @@ func GetUserByNicknameOrEmail(nickname string, email string) ([]User, error) {
 		}
 		result = append(result, u)
 	}
-
-	//fmt.Println("==========")
-	//for _, val := range result {
-	//	fmt.Println("\t", val)
-	//}
-	//fmt.Println("==========")
 
 	return result, nil
 }
@@ -109,30 +107,28 @@ func UpdateUser(userToUpdate User) (User, error, int) {
 		return updatedUser, nil, http.StatusOK
 	}
 
-	baseSql := "Update forum_users SET"
+	baseSQL := "Update forum_users SET"
 	if userToUpdate.Fullname == "" {
-		baseSql += " fullname = fullname,"
+		baseSQL += " fullname = fullname,"
 	} else {
-		baseSql += " fullname = '" + userToUpdate.Fullname + "',"
+		baseSQL += " fullname = '" + userToUpdate.Fullname + "',"
 	}
 
 	if userToUpdate.Email == "" {
-		baseSql += " email = email,"
+		baseSQL += " email = email,"
 	} else {
-		baseSql += " email = '" + userToUpdate.Email + "',"
+		baseSQL += " email = '" + userToUpdate.Email + "',"
 	}
 
 	if userToUpdate.About == "" {
-		baseSql += " about = about"
+		baseSQL += " about = about"
 	} else {
-		baseSql += " about = '" + userToUpdate.About + "'"
+		baseSQL += " about = '" + userToUpdate.About + "'"
 	}
 
-	baseSql += " WHERE nickname = '" + userToUpdate.Nickname + "'"
+	baseSQL += " WHERE nickname = '" + userToUpdate.Nickname + "'"
 
-	//fmt.Println(baseSql)
-
-	res, err := conn.Exec(baseSql)
+	res, err := conn.Exec(baseSQL)
 	if err != nil {
 		return User{}, errors.Wrap(err, "cannot update user"), http.StatusConflict
 	}
@@ -146,7 +142,7 @@ func UpdateUser(userToUpdate User) (User, error, int) {
 	return updatedUser, nil, http.StatusOK
 }
 
-func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool) ([]User, error, int) {
+func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool) (Users, error, int) {
 	conn := database.Connection
 
 	baseSQL := `SELECT about, email, fullname, fu.nickname FROM forum_users_forum JOIN forum_users fu ON fu.nickname = forum_users_forum.nickname`
@@ -169,8 +165,6 @@ func GetForumUsersBySlug(existingForum Forum, limit int, since string, desc bool
 	if limit != 0 {
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
 	}
-
-	//fmt.Println("GetForumUsersBySlug\t", baseSQL)
 
 	res, _ := conn.Query(baseSQL)
 	//if err != nil {

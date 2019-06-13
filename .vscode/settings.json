@@ -1,3 +1,5 @@
 {
-    "go.formatTool": "goimports"
+    "go.formatTool": "goimports",
+    "materialTheme.accent": "Acid Lime",
+    "material-icon-theme.folders.theme": "classic"
 }

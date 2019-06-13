@@ -1,13 +1,14 @@
 package models
 
 import (
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/Smet1/tp_db_forum/internal/database"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 //easyjson:json
@@ -22,6 +23,9 @@ type Thread struct {
 	Votes   int32     `json:"votes,omitempty"`
 }
 
+//easyjson:json
+type Threads []Thread
+
 func CreateThread(threadToCreate Thread) (Thread, error, int) {
 	conn := database.Connection
 
@@ -30,29 +34,12 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 		return Thread{}, errors.Wrap(err, "cant find slug"), http.StatusNotFound
 	}
 	threadToCreate.Forum = existingForum.Slug
-	//fmt.Println("\t\tDB forum.slug = ", existingForum.Slug)
 
 	existingUser, err := GetUserByNickname(threadToCreate.Author)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cant find user"), http.StatusNotFound
 	}
 	threadToCreate.Author = existingUser.Nickname
-	//fmt.Println("\t\tDB user.nickname = ", existingUser.Nickname)
-
-	//if threadToCreate.Slug == "" {
-	//	resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, NULL, $5)`,
-	//		threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Title)
-	//	if resInsert.RowsAffected() == 0 {
-	//		return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
-	//	}
-	//} else {
-	//	resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6)`,
-	//		threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
-	//		threadToCreate.Title)
-	//	if resInsert.RowsAffected() == 0 {
-	//		return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
-	//	}
-	//}
 
 	tx, _ := conn.Begin()
 	defer tx.Rollback()
@@ -63,7 +50,6 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 			threadToCreate.Title).Scan(&threadToCreate.ID)
 
 		if err == pgx.ErrNoRows {
-			//thread.Get(thread.Slug, 0)
 			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
 		} else if err != nil {
 			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
@@ -77,7 +63,6 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 			threadToCreate.Title).Scan(&threadToCreate.ID)
 
 		if err == pgx.ErrNoRows {
-			//thread.Get(thread.Slug, 0)
 			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
 		} else if err != nil {
 			return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusConflict
@@ -89,36 +74,6 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 
 	tx.Commit()
 
-	//resInsert, err := conn.Exec(`INSERT INTO forum_thread (author, created, forum, message, slug, title) VALUES ($1, $2, $3, $4, $5, $6)`,
-	//	threadToCreate.Author, threadToCreate.Created, threadToCreate.Forum, threadToCreate.Message, threadToCreate.Slug,
-	//	threadToCreate.Title)
-	//if resInsert.RowsAffected() == 0 {
-	//	return Thread{}, errors.Wrap(err, "cant create thread"), http.StatusInternalServerError
-	//}
-
-	// get last id
-	//res, err := conn.Query(`SELECT last_value FROM forum_thread_id_seq`)
-	//for res.Next() {
-	//	err := res.Scan(&threadToCreate.ID)
-	//
-	//	if err != nil {
-	//		return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-	//	}
-	//}
-	//log.Println("\t\t CreateThread id = ", threadToCreate.ID)
-
-	//res, err := conn.Query(`SELECT id FROM forum_thread WHERE slug = $1 OR `, threadToCreate.Slug)
-	//defer res.Close()
-	//
-	//for res.Next() {
-	//	err := res.Scan(&threadToCreate.ID)
-	//
-	//	if err != nil {
-	//		return Thread{}, errors.Wrap(err, "db query result parsing error"), http.StatusInternalServerError
-	//	}
-	//}
-	//log.Println("\t\t CreateThread id = ", threadToCreate.ID)
-
 	status := UpdateForumStats(existingForum, "thread", true, 1)
 	if status != http.StatusOK {
 		return Thread{}, errors.New("cant update forum stats"), status
@@ -129,7 +84,7 @@ func CreateThread(threadToCreate Thread) (Thread, error, int) {
 	return threadToCreate, nil, http.StatusOK
 }
 
-func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread, error, int) {
+func GetForumThreads(slug string, limit int, since string, desc bool) (Threads, error, int) {
 	conn := database.Connection
 
 	queriedThreads := make([]Thread, 0, 1)
@@ -145,7 +100,7 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 
 	if since != "" {
 		if desc {
-			baseSQL += " AND created <= '" + since + "'" // ::timestamptz
+			baseSQL += " AND created <= '" + since + "'"
 		} else {
 			baseSQL += " AND created >= '" + since + "'"
 		}
@@ -161,7 +116,6 @@ func GetForumThreads(slug string, limit int, since string, desc bool) ([]Thread,
 		baseSQL += " LIMIT " + strconv.Itoa(limit)
 	}
 
-	//log.Println(baseSQL)
 	res, _ := conn.Query(baseSQL)
 	//if err != nil {
 	//	return []Thread{}, errors.Wrap(err, "cannot get user by nickname or email"), http.StatusInternalServerError
@@ -261,30 +215,10 @@ func UpdateThreadVote(threadId int32, voteValue int8) (Thread, error, int) {
 	conn := database.Connection
 	tx, _ := conn.Begin()
 	defer tx.Rollback()
-	//if err != nil {
-	//	return Thread{}, errors.New("not found"), http.StatusNotFound
-	//}
 
-	//fmt.Println("UpdateThreadVote, idLog =", idLog)
-	//fmt.Println(voteValue)
-
-	//res, err := conn.Exec(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2`, voteValue, threadId)
-	//if err != nil {
-	//	return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict
-	//}
-	//
-	//if res.RowsAffected() == 0 {
-	//	return Thread{}, errors.New("not found"), http.StatusNotFound
-	//}
-	//
-	//updatedThread, err, _ := GetThreadByIDorSlug(int(threadId), "")
-	//if err != nil {
-	//	log.Println("UpdateThreadVote: updated thread not found", err)
-	//}
 	updatedThread := Thread{}
 	slugNullable := &pgtype.Varchar{}
-	err := tx.QueryRow(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2
-RETURNING author, created, forum, "message", slug, title, id, votes`,
+	err := tx.QueryRow(`UPDATE forum_thread SET votes = votes+$1 WHERE id = $2 RETURNING author, created, forum, "message", slug, title, id, votes`,
 		voteValue, threadId).Scan(&updatedThread.Author, &updatedThread.Created, &updatedThread.Forum,
 		&updatedThread.Message, slugNullable, &updatedThread.Title, &updatedThread.ID, &updatedThread.Votes)
 	updatedThread.Slug = slugNullable.String
@@ -318,7 +252,6 @@ func UpdateThread(existingThread Thread, newThread Thread) (Thread, error, int) 
 
 	baseSQL += " WHERE slug = '" + existingThread.Slug + "'"
 
-	//fmt.Println("\t", baseSQL)
 	res, err := conn.Exec(baseSQL)
 	if err != nil {
 		return Thread{}, errors.Wrap(err, "cannot update thread"), http.StatusConflict
