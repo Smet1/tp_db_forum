@@ -62,19 +62,19 @@ RUN /etc/init.d/postgresql start &&\
 # And add ``listen_addresses`` to ``/etc/postgresql/$PGVER/main/postgresql.conf``
 #RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 #RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
-#RUN echo "random_page_cost = 1.0" >> /etc/postgresql/$PGVER/main/postgresql.conf
+RUN echo "random_page_cost = 1.0" >> /etc/postgresql/$PGVER/main/postgresql.conf
 #RUN echo "work_mem = 16MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
 #RUN echo "fsync = 'off'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 
 # какого-то челика
-RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
-RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "random_page_cost = 1.0" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "wal_level = minimal" >> /etc/postgresql/$PGVER/main/postgresql.conf
-RUN echo "max_wal_senders = 0" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
+#RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "fsync = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "synchronous_commit = off" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "shared_buffers = 512MB" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "random_page_cost = 1.0" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "wal_level = minimal" >> /etc/postgresql/$PGVER/main/postgresql.conf
+#RUN echo "max_wal_senders = 0" >> /etc/postgresql/$PGVER/main/postgresql.conf
 # до сюда
 
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
